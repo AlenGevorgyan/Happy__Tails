@@ -1,0 +1,25 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/homeMenu"
+        android:title="Home"
+        android:icon="@drawable/homeimage"
+        android:iconTint="@color/secondary_color"/>
+
+    <item
+        android:id="@+id/createPostMenu"
+        android:title="Create Post"
+        android:icon="@drawable/createimage"
+        android:iconTint="@color/secondary_color"/>
+
+    <item
+        android:id="@+id/chatsMenu"
+        android:title="Chats"
+        android:icon="@drawable/baseline_chat_bubble_24"
+        android:iconTint="@color/secondary_color"/>
+
+    <item
+        android:id="@+id/profileMenu"
+        android:title="Profile"
+        android:icon="@drawable/user_icon"
+        android:iconTint="@color/secondary_color"/>
+</menu>

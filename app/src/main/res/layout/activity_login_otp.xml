@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container_otp_verification"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/primary_color"
+    tools:context=".utils.LoginOtpActivity">
+
+    <!-- Back Button -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_back"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        app:cardCornerRadius="20dp"
+        app:cardBackgroundColor="@color/primary_color"
+        app:cardElevation="2dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp">
+
+        <ImageView
+            android:id="@+id/btn_back_otp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/baseline_arrow_back_24"
+            android:layout_gravity="center"/>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Progress Indicator Steps -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="25dp"
+        app:cardElevation="4dp"
+        app:cardBackgroundColor="@color/off_white"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="20dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="10dp"
+            android:gravity="center">
+
+            <!-- Step 1 Indicator (Completed) -->
+            <TextView
+                android:id="@+id/txt_step1"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginEnd="30dp"
+                android:background="@drawable/circular_bg"
+                android:backgroundTint="@color/gray"
+                android:gravity="center"
+                android:text="1"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <!-- Step 2 Indicator (Current) -->
+            <TextView
+                android:id="@+id/txt_step2"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:background="@drawable/circular_bg"
+                android:backgroundTint="@color/primary_color"
+                android:text="2"
+                android:gravity="center"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Main Content Container -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/card_progress"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="20dp">
+
+        <!-- OTP Illustration -->
+        <ImageView
+            android:id="@+id/img_otp"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:src="@drawable/otp_icon"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/txt_verification_message"
+            app:layout_constraintVertical_chainStyle="packed"/>
+
+        <!-- Verification Instructions -->
+        <TextView
+            android:id="@+id/txt_verification_message"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Verify Your Email"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:lineSpacingMultiplier="1.2"
+            app:layout_constraintTop_toBottomOf="@id/img_otp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/btn_verify"
+            android:layout_marginTop="32dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"/>
+
+        <!-- Verification Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_verify"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Press after verification"
+            android:textColor="@color/primary_color"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:padding="12dp"
+            app:cornerRadius="24dp"
+            app:backgroundTint="@color/white"
+            app:layout_constraintTop_toBottomOf="@id/txt_verification_message"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/txt_resend_code"
+            android:layout_marginTop="24dp"
+            android:layout_marginStart="80dp"
+            android:layout_marginEnd="80dp"/>
+
+        <!-- Resend Code Text -->
+        <TextView
+            android:id="@+id/txt_resend_code"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="resend in 30 sec"
+            android:textColor="@color/dark_secondary_color"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/btn_verify"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/progress_loading_otp"
+            android:layout_marginTop="16dp"/>
+
+        <!-- Loading Progress Indicator -->
+        <ProgressBar
+            android:id="@+id/progress_loading_otp"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:indeterminateTint="@color/white"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/txt_resend_code"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="40dp"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

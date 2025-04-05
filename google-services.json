@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "780448923464",
+    "project_id": "rational-photon-380817",
+    "storage_bucket": "rational-photon-380817.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:780448923464:android:8b8f75ea82ffc364d3bd7d",
+        "android_client_info": {
+          "package_name": "com.app.happytails"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAywxgoN16dKD0vEbhofQ9oUzCV8vtyGO4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

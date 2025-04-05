@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_marginBottom="20dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@color/primary_color">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/post_user_image"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="20dp"
+            android:src="@drawable/user_icon"
+            android:layout_centerVertical="true"/>
+
+        <TextView
+            android:id="@+id/usernameTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Username"
+            android:layout_toRightOf="@id/post_user_image"
+            android:layout_marginStart="25dp"
+            android:textSize="23dp"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:layout_centerVertical="true"/>
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="15dp">
+
+        <!-- Dog's Profile Picture -->
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/post_picture_home"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_gravity="center"
+            android:scaleType="centerCrop"
+            android:src="@drawable/user_icon"
+            android:contentDescription="Dog profile picture" />
+
+        <!-- Dog's Name -->
+        <TextView
+            android:id="@+id/dog_name_home"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"
+            android:text="Dog Name"
+            android:textColor="@color/black"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <!-- Urgency Level -->
+        <TextView
+            android:id="@+id/urgency_level_home"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"
+            android:text="Urgency Level: 0"
+            android:textColor="@color/black"
+            android:textSize="18sp" />
+
+        <!-- Supporters List -->
+        <TextView
+            android:id="@+id/supporters_list_home"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="John, Sarah, Alex"
+            android:textColor="@color/black"
+            android:textSize="14sp" />
+
+        <!-- Monthly Funding Progress Bar -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Monthly Funding"
+            android:textColor="@color/black"
+            android:textStyle="bold"/>
+
+        <ProgressBar
+            android:id="@+id/funding_bar_home"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:progress="75"
+            android:max="100"
+            android:progressDrawable="@drawable/progress_bar_custom" />
+
+        <Button
+            android:id="@+id/view_profile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/white"
+            android:text="View Profile" />
+
+    </LinearLayout>
+
+</LinearLayout>

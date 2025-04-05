@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Toolbar
+        android:id="@+id/followings_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/primary_color">
+
+        <ImageButton
+            android:id="@+id/followings_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_arrow_back_24"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Followings"
+            android:textColor="@color/secondary_color"
+            android:textStyle="bold"
+            android:textSize="24sp"
+            android:layout_marginStart="30dp"/>
+    </Toolbar>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewFollowing"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/followings_toolbar"
+        android:layout_marginTop="10dp"
+        android:orientation="vertical"/>
+</RelativeLayout>
