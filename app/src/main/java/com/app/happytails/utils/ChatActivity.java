@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.EditText;
@@ -17,19 +18,30 @@ import com.app.happytails.utils.Adapters.ChatRecyclerAdapter;
 import com.app.happytails.utils.model.ChatMessageModel;
 import com.app.happytails.utils.model.ChatroomModel;
 import com.app.happytails.utils.model.UserModel;
-import com.bumptech.glide.Glide;
+import com.app.happytails.utils.AndroidUtil;
+import com.app.happytails.utils.FirebaseUtil;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import org.json.JSONObject;
 
+import java.io.IOException;
+import java.sql.Time;
 import java.util.Arrays;
 
-public class ChatActivity extends AppCompatActivity {
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
-    private static final String TAG = "ChatActivity";
+public class ChatActivity extends AppCompatActivity {
 
     UserModel otherUser;
     String chatroomId;
@@ -43,11 +55,14 @@ public class ChatActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     ImageView imageView;
 
+    private static final String TAG = "ChatActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+        //get UserModel
         otherUser = AndroidUtil.getUserModelFromIntent(getIntent());
         chatroomId = FirebaseUtil.getChatroomId(FirebaseUtil.currentUserId(), otherUser.getUserId());
 
@@ -58,34 +73,25 @@ public class ChatActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.chat_recycler_view);
         imageView = findViewById(R.id.profile_pic_inchat);
 
-        FirebaseFirestore.getInstance().collection("users")
-                .document(otherUser.getUserId())
-                .get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        DocumentSnapshot document = task.getResult();
-                        if (document.exists()) {
-                            String imageUrl = document.getString("imageUrl");
-                            if (imageUrl != null && !imageUrl.isEmpty()) {
-                                Glide.with(this)
-                                        .load(imageUrl)
-                                        .placeholder(R.drawable.user_icon)
-                                        .error(R.drawable.user_icon)
-                                        .into(imageView);
-                            }
-                        }
+        FirebaseUtil.getOtherProfileImage(otherUser.getUserId())
+                .addOnCompleteListener(t -> {
+                    if (t.isSuccessful()) {
+                        Uri uri = Uri.parse(t.getResult());
+                        AndroidUtil.setProfilePic(this, uri, imageView);
                     }
                 });
 
-        backBtn.setOnClickListener(v -> onBackPressed());
+        backBtn.setOnClickListener((v) -> {
+            onBackPressed();
+        });
         otherUsername.setText(otherUser.getUsername());
 
-        sendMessageBtn.setOnClickListener(v -> {
+        sendMessageBtn.setOnClickListener((v -> {
             String message = messageInput.getText().toString().trim();
-            if (!message.isEmpty()) {
-                sendMessageToUser(message);
-            }
-        });
+            if (message.isEmpty())
+                return;
+            sendMessageToUser(message);
+        }));
 
         getOrCreateChatroomModel();
         setupChatRecyclerView();
@@ -104,7 +110,6 @@ public class ChatActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapter);
         adapter.startListening();
-
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
@@ -115,6 +120,8 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     void sendMessageToUser(String message) {
+        Log.d(TAG, "sendMessageToUser called with message: " + message);
+
         chatroomModel.setLastMessageTimestamp(Timestamp.now());
         chatroomModel.setLastMessageSenderId(FirebaseUtil.currentUserId());
         chatroomModel.setLastMessage(message);
@@ -122,19 +129,27 @@ public class ChatActivity extends AppCompatActivity {
 
         ChatMessageModel chatMessageModel = new ChatMessageModel(message, FirebaseUtil.currentUserId(), Timestamp.now());
         FirebaseUtil.getChatroomMessageReference(chatroomId).add(chatMessageModel)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        messageInput.setText("");
-                        // Notification code removed
+                .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentReference> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "Message sent successfully");
+                            messageInput.setText("");
+                        } else {
+                            Log.e(TAG, "Error sending message", task.getException());
+                        }
                     }
                 });
     }
 
     void getOrCreateChatroomModel() {
+        Log.d(TAG, "getOrCreateChatroomModel called");
         FirebaseUtil.getChatroomReference(chatroomId).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 chatroomModel = task.getResult().toObject(ChatroomModel.class);
                 if (chatroomModel == null) {
+                    Log.d(TAG, "Chatroom does not exist, creating new chatroom");
+                    // first time chat
                     chatroomModel = new ChatroomModel(
                             chatroomId,
                             Arrays.asList(FirebaseUtil.currentUserId(), otherUser.getUserId()),
@@ -142,7 +157,11 @@ public class ChatActivity extends AppCompatActivity {
                             ""
                     );
                     FirebaseUtil.getChatroomReference(chatroomId).set(chatroomModel);
+                } else {
+                    Log.d(TAG, "Chatroom exists");
                 }
+            } else {
+                Log.e(TAG, "Error getting chatroom", task.getException());
             }
         });
     }

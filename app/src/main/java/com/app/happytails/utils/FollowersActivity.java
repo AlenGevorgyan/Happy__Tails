@@ -1,5 +1,6 @@
 package com.app.happytails.utils;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageButton;
@@ -72,5 +73,10 @@ public class FollowersActivity extends AppCompatActivity implements ProfileFragm
     @Override
     public void onProfileFragmentClosed() {
         // Handle the fragment close interaction if needed
+    }
+
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
+        super.onPointerCaptureChanged(hasCapture);
     }
 }

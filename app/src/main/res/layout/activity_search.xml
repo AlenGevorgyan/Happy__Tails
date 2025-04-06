@@ -34,42 +34,10 @@
             android:id="@+id/back_btn"/>
     </RelativeLayout>
 
-    <LinearLayout
-        android:id="@+id/search_toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/toolbar"
-        android:orientation="horizontal"
-        android:weightSum="2"
-        android:gravity="center">
-
-        <Button
-            android:id="@+id/btn_search_person"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Person"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:textColor="@color/primary_color"
-            android:padding="10dp"
-            android:layout_weight="1"
-            android:gravity="center"/>
-
-        <Button
-            android:id="@+id/btn_search_dog"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Dog"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:textColor="@color/primary_color"
-            android:padding="10dp"
-            android:layout_weight="1"
-            android:gravity="center"/>
-    </LinearLayout>
-
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/search_toolbar"
+        android:layout_below="@id/toolbar"
         android:layout_margin="10dp"
         android:id="@+id/search_user_layout">
 

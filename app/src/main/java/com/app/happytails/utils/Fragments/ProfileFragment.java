@@ -41,7 +41,6 @@ import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-
 public class ProfileFragment extends Fragment {
 
     private static final String TAG = "ProfileFragment";
@@ -313,66 +312,66 @@ public class ProfileFragment extends Fragment {
                     }
                     if (followers.contains(currentUserId)) {
                         followers.remove(currentUserId);
-                        List<String> finalFollowers = followers;
+                        List<String> finalFollowers1 = followers;
                         userRef.update("followers", followers).addOnCompleteListener(updateTask -> {
                             if (updateTask.isSuccessful()) {
                                 followBtn.setText("Follow");
-                                followerCountTv.setText(String.valueOf(finalFollowers.size()));
+                                followerCountTv.setText(String.valueOf(finalFollowers1.size()));
+
+                                otherUserRef.get().addOnCompleteListener(otherTask -> {
+                                    if (otherTask.isSuccessful() && otherTask.getResult() != null) {
+                                        DocumentSnapshot otherUserSnapshot = otherTask.getResult();
+                                        if (otherUserSnapshot.exists()) {
+                                            List<String> followings = (List<String>) otherUserSnapshot.get("followings");
+                                            if (followings == null) {
+                                                followings = new ArrayList<>();
+                                            }
+                                            followings.remove(profileUid);
+                                            List<String> finalFollowings = followings;
+                                            otherUserRef.update("followings", followings).addOnCompleteListener(otherUpdateTask -> {
+                                                if (otherUpdateTask.isSuccessful()) {
+                                                    followingCountTv.setText(String.valueOf(finalFollowings.size()));
+                                                } else {
+                                                    Toast.makeText(context, "Error updating followings", Toast.LENGTH_SHORT).show();
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
                             } else {
                                 Toast.makeText(context, "Error unfollowing", Toast.LENGTH_SHORT).show();
                             }
                         });
-
-                        otherUserRef.get().addOnCompleteListener(otherTask -> {
-                            if (otherTask.isSuccessful() && otherTask.getResult() != null) {
-                                DocumentSnapshot otherUserSnapshot = otherTask.getResult();
-                                if (otherUserSnapshot.exists()) {
-                                    List<String> followings = (List<String>) otherUserSnapshot.get("followings");
-                                    if (followings == null) {
-                                        followings = new ArrayList<>();
-                                    }
-                                    followings.remove(profileUid);
-                                    List<String> finalFollowings = followings;
-                                    otherUserRef.update("followings", followings).addOnCompleteListener(otherUpdateTask -> {
-                                        if (otherUpdateTask.isSuccessful()) {
-                                            followingCountTv.setText(String.valueOf(finalFollowings.size()));
-                                        } else {
-                                            Toast.makeText(context, "Error updating followings", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                                }
-                            }
-                        });
                     } else {
                         followers.add(currentUserId);
-                        List<String> finalFollowers1 = followers;
+                        List<String> finalFollowers = followers;
                         userRef.update("followers", followers).addOnCompleteListener(updateTask -> {
                             if (updateTask.isSuccessful()) {
                                 followBtn.setText("Unfollow");
-                                followerCountTv.setText(String.valueOf(finalFollowers1.size()));
+                                followerCountTv.setText(String.valueOf(finalFollowers.size()));
+
+                                otherUserRef.get().addOnCompleteListener(otherTask -> {
+                                    if (otherTask.isSuccessful() && otherTask.getResult() != null) {
+                                        DocumentSnapshot otherUserSnapshot = otherTask.getResult();
+                                        if (otherUserSnapshot.exists()) {
+                                            List<String> followings = (List<String>) otherUserSnapshot.get("followings");
+                                            if (followings == null) {
+                                                followings = new ArrayList<>();
+                                            }
+                                            followings.add(profileUid);
+                                            List<String> finalFollowings = followings;
+                                            otherUserRef.update("followings", followings).addOnCompleteListener(otherUpdateTask -> {
+                                                if (otherUpdateTask.isSuccessful()) {
+                                                    followingCountTv.setText(String.valueOf(finalFollowings.size()));
+                                                } else {
+                                                    Toast.makeText(context, "Error updating followings", Toast.LENGTH_SHORT).show();
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
                             } else {
                                 Toast.makeText(context, "Error following", Toast.LENGTH_SHORT).show();
-                            }
-                        });
-
-                        otherUserRef.get().addOnCompleteListener(otherTask -> {
-                            if (otherTask.isSuccessful() && otherTask.getResult() != null) {
-                                DocumentSnapshot otherUserSnapshot = otherTask.getResult();
-                                if (otherUserSnapshot.exists()) {
-                                    List<String> followings = (List<String>) otherUserSnapshot.get("followings");
-                                    if (followings == null) {
-                                        followings = new ArrayList<>();
-                                    }
-                                    followings.add(profileUid);
-                                    List<String> finalFollowings = followings;
-                                    otherUserRef.update("followings", followings).addOnCompleteListener(otherUpdateTask -> {
-                                        if (otherUpdateTask.isSuccessful()) {
-                                            followingCountTv.setText(String.valueOf(finalFollowings.size()));
-                                        } else {
-                                            Toast.makeText(context, "Error updating followings", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                                }
                             }
                         });
                     }
