@@ -25,8 +25,17 @@ public class FirebaseUtil {
     }
 
     public static DocumentReference currentUserDetails() {
-        return FirebaseFirestore.getInstance().collection("users").document(currentUserId());
+        String currentUserId = FirebaseAuth.getInstance().getUid();
+
+        if (currentUserId == null) {
+            throw new IllegalStateException("User is not signed in.");
+        }
+
+        return FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(currentUserId);
     }
+
 
     public static CollectionReference allUserCollectionReference() {
         return FirebaseFirestore.getInstance().collection("users");
@@ -89,5 +98,10 @@ public class FirebaseUtil {
     public static StorageReference getOtherProfilePicStorageRef(String otherUserId){
         return FirebaseStorage.getInstance().getReference().child("profile_pic")
                 .child(otherUserId);
+    }
+
+    // Get reference to a specific dog
+    public static DocumentReference getDogReference(String dogId) {
+        return FirebaseFirestore.getInstance().collection("dogs").document(dogId);
     }
 }

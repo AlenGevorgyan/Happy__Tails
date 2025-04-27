@@ -145,11 +145,35 @@
         android:progress="75"
         android:progressDrawable="@drawable/progress_bar_custom" />
 
+    <TextView
+        android:id="@+id/fundingAmountTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/funding_bar_profile"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:text="$0.00"
+        android:textColor="@color/black"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/targetAmountTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/funding_bar_profile"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:text="$0.00"
+        android:textColor="@color/black"
+        android:textSize="16sp" />
+
     <Button
-        android:id="@+id/donateBtn"
+        android:id="@+id/donateButton"
         android:layout_width="wrap_content"
         android:layout_height="50dp"
-        android:layout_below="@id/funding_bar_profile"
+        android:layout_below="@id/fundingAmountTV"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="16dp"
         android:textColor="@color/white"
@@ -174,7 +198,7 @@
         android:id="@+id/dogProfileDivider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_below="@id/donateBtn"
+        android:layout_below="@id/donateButton"
         android:layout_marginTop="25dp"
         app:dividerColor="@color/gray" />
 

@@ -18,19 +18,18 @@ import com.app.happytails.utils.Adapters.ChatRecyclerAdapter;
 import com.app.happytails.utils.model.ChatMessageModel;
 import com.app.happytails.utils.model.ChatroomModel;
 import com.app.happytails.utils.model.UserModel;
-import com.app.happytails.utils.AndroidUtil;
-import com.app.happytails.utils.FirebaseUtil;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.sql.Time;
 import java.util.Arrays;
 
 import okhttp3.Call;
@@ -54,6 +53,7 @@ public class ChatActivity extends AppCompatActivity {
     TextView otherUsername;
     RecyclerView recyclerView;
     ImageView imageView;
+    String currUsrName;
 
     private static final String TAG = "ChatActivity";
 
@@ -62,7 +62,7 @@ public class ChatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        //get UserModel
+        // Get UserModel
         otherUser = AndroidUtil.getUserModelFromIntent(getIntent());
         chatroomId = FirebaseUtil.getChatroomId(FirebaseUtil.currentUserId(), otherUser.getUserId());
 
@@ -81,16 +81,14 @@ public class ChatActivity extends AppCompatActivity {
                     }
                 });
 
-        backBtn.setOnClickListener((v) -> {
-            onBackPressed();
-        });
+        backBtn.setOnClickListener((v) -> onBackPressed());
         otherUsername.setText(otherUser.getUsername());
 
         sendMessageBtn.setOnClickListener((v -> {
             String message = messageInput.getText().toString().trim();
-            if (message.isEmpty())
-                return;
-            sendMessageToUser(message);
+            if (!message.isEmpty()) {
+                sendMessageToUser(message);
+            }
         }));
 
         getOrCreateChatroomModel();
@@ -113,7 +111,6 @@ public class ChatActivity extends AppCompatActivity {
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
-                super.onItemRangeInserted(positionStart, itemCount);
                 recyclerView.smoothScrollToPosition(0);
             }
         });
@@ -129,15 +126,13 @@ public class ChatActivity extends AppCompatActivity {
 
         ChatMessageModel chatMessageModel = new ChatMessageModel(message, FirebaseUtil.currentUserId(), Timestamp.now());
         FirebaseUtil.getChatroomMessageReference(chatroomId).add(chatMessageModel)
-                .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentReference> task) {
-                        if (task.isSuccessful()) {
-                            Log.d(TAG, "Message sent successfully");
-                            messageInput.setText("");
-                        } else {
-                            Log.e(TAG, "Error sending message", task.getException());
-                        }
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Log.d(TAG, "Message sent successfully");
+                        messageInput.setText("");
+                        sendNotification(message, "");
+                    } else {
+                        Log.e(TAG, "Error sending message", task.getException());
                     }
                 });
     }
@@ -149,7 +144,6 @@ public class ChatActivity extends AppCompatActivity {
                 chatroomModel = task.getResult().toObject(ChatroomModel.class);
                 if (chatroomModel == null) {
                     Log.d(TAG, "Chatroom does not exist, creating new chatroom");
-                    // first time chat
                     chatroomModel = new ChatroomModel(
                             chatroomId,
                             Arrays.asList(FirebaseUtil.currentUserId(), otherUser.getUserId()),
@@ -165,4 +159,60 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
     }
+
+    public void sendNotification(String message, String lastPhoto) {
+        FirebaseUtil.currentUserDetails().get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                UserModel currentUser = task.getResult().toObject(UserModel.class);
+                // Use SendNotification helper to send the notification
+                SendNotification sendNotificationHelper = new SendNotification();
+                sendNotificationHelper.sendPushNotification(
+                        otherUser.getFcmToken(),
+                        currentUser.getUsername(),
+                        message
+                );
+            } else {
+                Log.e(TAG, "Failed to get current user details", task.getException());
+            }
+        });
+    }
+
+    private static final String FCM_URL = "https://fcm.googleapis.com/fcm/send";   private static final String API_KEY = "ac84eaf87b4f708e5e0e7df84ce139caafaabc38";
+    private static final MediaType APPLICATION_JSON_MEDIA_TYPE = MediaType.get("application/json");
+
+    public void callApi(JSONObject jsonObject) {
+        OkHttpClient client = new OkHttpClient.Builder().build();
+
+        RequestBody body = RequestBody.create(jsonObject.toString(), APPLICATION_JSON_MEDIA_TYPE);
+        Request request = new Request.Builder()
+                .url(FCM_URL)
+                .header("Authorization", "key=" + API_KEY)
+                .post(body)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                // Handle failure more meaningfully, e.g., re-throw the exception
+                throw new RuntimeException("Failed to call API", e);
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                try{
+                    if (response!= null && response.isSuccessful()) {
+                        Log.d("API Response", "Success");
+                    } else {
+                        Log.e("API Response", "Failed: " + response);
+                    }
+                }finally {
+                    if (response.body() != null) {
+                        response.body().close();
+                    }
+                }
+
+            }
+        });
+    }
 }
+

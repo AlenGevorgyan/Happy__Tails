@@ -81,6 +81,24 @@
                     android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <!-- Patreon Url -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/input_patreon_url"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Patreon Url"
+                app:boxBackgroundColor="@color/white"
+                app:errorEnabled="true">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/patreon_url"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:inputType="textCapWords"
+                    android:maxLines="1" />
+            </com.google.android.material.textfield.TextInputLayout>
+
             <!-- Dog Description -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/input_dog_description"

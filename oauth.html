@@ -1,0 +1,23 @@
+<!-- The page where users can start the OAuth flow -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start Donation Process</title>
+</head>
+<body>
+<h1>Start Donation Process</h1>
+<button onclick="redirectToPatreon()">Donate via Patreon</button>
+
+<script>
+    const clientId = 'rInp7p5sJ3MZwEIh4_wZaljG1UISzx2R7w-hPVhPbe1XfZJ44-6nQX9jtzvzQLWc'; // Replace with your Patreon client ID
+    const redirectUri = 'https://happytails.page.link/FgzB'; // Your redirect URL
+
+    function redirectToPatreon() {
+        const patreonAuthUrl = `https://www.patreon.com/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=identity`;
+        window.location.href = patreonAuthUrl;
+    }
+</script>
+</body>
+</html>

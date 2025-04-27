@@ -38,7 +38,7 @@ import java.util.ArrayList;
 
 public class CreateFragment2 extends Fragment {
 
-    private EditText dogName, descriptionED;
+    private EditText dogName, descriptionED, patreonUrl;
     private ImageView dogGalleryPic, dogPic;
     private Button nextButton, urgencyLevelButton;
     private RecyclerView recyclerView;
@@ -77,6 +77,7 @@ public class CreateFragment2 extends Fragment {
         urgencyLevelValue = view.findViewById(R.id.urgencyLevelValue);
         urgencyLevelButton = view.findViewById(R.id.urgencyLevelTitle);
         progbar = view.findViewById(R.id.create_progress);
+        patreonUrl = view.findViewById(R.id.patreon_url);
 
         // Setup Firebase
         storage = FirebaseStorage.getInstance();
@@ -103,6 +104,7 @@ public class CreateFragment2 extends Fragment {
         String name = dogName.getText().toString();
         String description = descriptionED.getText().toString();
         String creatorId = auth.getCurrentUser().getUid();
+        String patreon_url = patreonUrl.getText().toString();
 
         if (name.isEmpty() || description.isEmpty()) {
             Toast.makeText(getContext(), "Fill all fields", Toast.LENGTH_SHORT).show();
@@ -114,13 +116,13 @@ public class CreateFragment2 extends Fragment {
             progbar.setVisibility(View.VISIBLE);
             nextButton.setEnabled(false);
 
-            uploadMainImageAndCreatePost(creatorId, name, description, urgencyLevel);
+            uploadMainImageAndCreatePost(creatorId, name, description, urgencyLevel, patreon_url);
         } else {
             Toast.makeText(getContext(), "Please select a main image", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void uploadMainImageAndCreatePost(String creatorId, String name, String description, int urgencyLevel) {
+    private void uploadMainImageAndCreatePost(String creatorId, String name, String description, int urgencyLevel, String patreon_url) {
         StorageReference mainImageRef = storage.getReference().child("dog_images/" + creatorId + "/main_image.jpg");
         UploadTask uploadTask = mainImageRef.putFile(mainImageUri);
 
@@ -128,7 +130,7 @@ public class CreateFragment2 extends Fragment {
             mainImageRef.getDownloadUrl().addOnSuccessListener(uri -> {
                 // Once the main image is uploaded, proceed to upload gallery images
                 ArrayList<String> galleryImageUrls = new ArrayList<>();
-                uploadGalleryImages(creatorId, name, description, urgencyLevel, uri.toString(), galleryImageUrls);
+                uploadGalleryImages(creatorId, name, description, urgencyLevel, uri.toString(), galleryImageUrls, patreon_url);
             });
         }).addOnFailureListener(e -> {
             // Hide progress bar and enable next button
@@ -138,7 +140,7 @@ public class CreateFragment2 extends Fragment {
         });
     }
 
-    private void uploadGalleryImages(String creatorId, String name, String description, int urgencyLevel, String mainImageUrl, ArrayList<String> galleryImageUrls) {
+    private void uploadGalleryImages(String creatorId, String name, String description, int urgencyLevel, String mainImageUrl, ArrayList<String> galleryImageUrls, String patreon_url) {
         StorageReference galleryRef = storage.getReference().child("dog_images/" + creatorId + "/gallery/");
 
         for (int i = 0; i < galleryUris.size(); i++) {
@@ -152,7 +154,7 @@ public class CreateFragment2 extends Fragment {
 
                     // Check if all gallery images have been uploaded
                     if (galleryImageUrls.size() == galleryUris.size()) {
-                        createDogInFirestore(creatorId, name, description, urgencyLevel, mainImageUrl, galleryImageUrls);
+                        createDogInFirestore(creatorId, name, description, urgencyLevel, mainImageUrl, galleryImageUrls, patreon_url);
                     }
                 });
             }).addOnFailureListener(e -> {
@@ -164,10 +166,10 @@ public class CreateFragment2 extends Fragment {
         }
     }
 
-    private void createDogInFirestore(String creatorId, String name, String description, int urgencyLevel, String mainImageUrl, ArrayList<String> galleryImageUrls) {
+    private void createDogInFirestore(String creatorId, String name, String description, int urgencyLevel, String mainImageUrl, ArrayList<String> galleryImageUrls, String patreon_url) {
         String dogId = firestore.collection("dogs").document().getId();
 
-        HomeModel dog = new HomeModel(creatorId, dogId, name, 0, galleryImageUrls, mainImageUrl, new ArrayList<>(), 0.0, new ArrayList<>(), urgencyLevel);
+        HomeModel dog = new HomeModel(creatorId, dogId, name, 0, galleryImageUrls, mainImageUrl, new ArrayList<>(), 0.0, new ArrayList<>(), urgencyLevel, patreon_url);
 
         firestore.collection("dogs").document(dogId).set(dog)
                 .addOnSuccessListener(aVoid -> {

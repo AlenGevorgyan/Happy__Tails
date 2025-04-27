@@ -52,9 +52,14 @@ public class SignInActivity extends AppCompatActivity {
         });
 
         signInButton.setOnClickListener(v -> signInUser());
-
         testBtn.setOnClickListener(v -> testSignIn());
+
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        if (currentUser != null && currentUser.isEmailVerified()) {
+            navigateToHome();
+        }
     }
+
 
     private void testSignIn() {
         String email = "alengevorgyan2009@gmail.com";

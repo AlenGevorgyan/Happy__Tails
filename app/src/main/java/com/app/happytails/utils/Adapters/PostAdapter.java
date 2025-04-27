@@ -64,11 +64,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             holder.urgencyLevel.setText("Urgency Level: " + "Basic Needs");
         }else if (post.getUrgencylevel() == 2){
             holder.urgencyLevel.setText("Urgency Level: " + "Mild Support");
-        }if (post.getUrgencylevel() == 1){
+        }if (post.getUrgencylevel() == 3){
             holder.urgencyLevel.setText("Urgency Level: " + "Moderate Help");
-        }if (post.getUrgencylevel() == 1){
+        }if (post.getUrgencylevel() == 4){
             holder.urgencyLevel.setText("Urgency Level: " + "Urgent Care");
-        }if (post.getUrgencylevel() == 1){
+        }if (post.getUrgencylevel() == 5){
             holder.urgencyLevel.setText("Urgency Level: " + "Critical");
         }
 

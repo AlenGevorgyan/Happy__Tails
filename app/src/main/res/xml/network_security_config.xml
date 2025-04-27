@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
+    <!-- Allow cleartext traffic for development -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+    
+    <!-- Trust specific domains -->
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">res.cloudinary.com</domain>
+        <domain includeSubdomains="true">patreon.com</domain>
+        <domain includeSubdomains="true">happytails.page.link</domain>
+        <domain includeSubdomains="true">firebase.google.com</domain>
+        <domain includeSubdomains="true">rational-photon-380817.web.app</domain>
+        <domain includeSubdomains="true">firebase.app</domain>
     </domain-config>
 </network-security-config>

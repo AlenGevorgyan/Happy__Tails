@@ -1,0 +1,23 @@
+<!-- /public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Start Donation Process</title>
+</head>
+<body>
+<h1>Start Donation Process</h1>
+<button onclick="redirectToPatreon()">Donate via Patreon</button>
+
+<script>
+  const redirectUri = 'https://happytails.page.link/FgzB'; // Your registered redirect URI
+  const clientId = 'b52EdnyzuTSeiwP8LfcSh3TEjnkshMfQpzeV8QewHNyzBOM6OObEn34E_Dfr2nCa';
+
+  function redirectToPatreon() {
+    const authUrl = `https://www.patreon.com/oauth2/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=identity%20campaigns%20campaigns.members`;
+    window.location.href = authUrl;
+  }
+</script>
+</body>
+</html>

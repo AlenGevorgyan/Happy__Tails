@@ -1,5 +1,5 @@
 [versions]
-agp = "8.7.0"
+agp = "8.9.1"
 cardview = "1.0.0"
 circleimageview = "3.1.0"
 circularviewVersion = "1.3.2"
@@ -25,6 +25,7 @@ firebaseDatabase = "21.0.0"
 firebaseAuth = "23.1.0"
 playServicesAuth = "21.3.0"
 firebaseCrashlyticsBuildtools = "3.0.2"
+firebaseMessaging = "24.1.1"
 
 [libraries]
 cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
@@ -54,6 +55,7 @@ material-v160 = { module = "com.google.android.material:material", version.ref =
 mikhaellopez-circularview = { module = "com.mikhaellopez:circularview", version.ref = "circularviewVersion" }
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 firebase-crashlytics-buildtools = { group = "com.google.firebase", name = "firebase-crashlytics-buildtools", version.ref = "firebaseCrashlyticsBuildtools" }
+firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging", version.ref = "firebaseMessaging" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
