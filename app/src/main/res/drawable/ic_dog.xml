@@ -1,0 +1,40 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+
+    <!-- Dog's head -->
+    <path
+        android:fillColor="#FFB74D"
+        android:strokeColor="#E68A2E"
+        android:strokeWidth="2"
+        android:pathData="M50,15a25,25 0 1,1 0,50a25,25 0 1,1 0,-50z"/>
+
+    <!-- Dog's ears -->
+    <path
+        android:fillColor="#E68A2E"
+        android:pathData="M30,15 Q50,5 70,15 L65,30 Q50,25 35,30 Z"/>
+
+    <!-- Dog's eyes -->
+    <path
+        android:fillColor="#333333"
+        android:pathData="M40,35a5,5 0 1,1 0,10a5,5 0 1,1 0,-10z"/>
+    <path
+        android:fillColor="#333333"
+        android:pathData="M60,35a5,5 0 1,1 0,10a5,5 0 1,1 0,-10z"/>
+
+    <!-- Dog's mouth -->
+    <path
+        android:strokeColor="#333333"
+        android:strokeWidth="2"
+        android:fillColor="#00000000"
+        android:pathData="M40,50 Q50,55 60,50"/>
+
+    <!-- Dog's body -->
+    <path
+        android:fillColor="#FFB74D"
+        android:strokeColor="#E68A2E"
+        android:strokeWidth="2"
+        android:pathData="M30,80a20,15 0 1,0 40,0a20,15 0 1,0 -40,0z"/>
+</vector>

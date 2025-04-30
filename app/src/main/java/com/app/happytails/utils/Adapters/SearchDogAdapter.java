@@ -39,6 +39,9 @@ public class SearchDogAdapter extends FirestoreRecyclerAdapter<DogSearchModel, S
     @Override
     protected void onBindViewHolder(@NonNull DogModelViewHolder holder, int position, @NonNull DogSearchModel model) {
         holder.dogNameText.setText(model.getDogName());
+//        if (model.getCreatorId() != null && model.getCreatorId().equals(FirebaseUtil.currentUserId())) {
+//            holder.dogNameText.setText(model.getDogName() + " (Mine)");
+//        }
         loadDogImage(model.getDogId(), holder.profilePic);
 
         holder.itemView.setOnClickListener(v -> {
@@ -60,7 +63,7 @@ public class SearchDogAdapter extends FirestoreRecyclerAdapter<DogSearchModel, S
             if (imageTask.isSuccessful() && imageTask.getResult() != null) {
                 AndroidUtil.setProfilePic(profilePic.getContext(), Uri.parse(imageTask.getResult()), profilePic);
             } else {
-                profilePic.setImageResource(R.drawable.baseline_add_24);
+                profilePic.setImageResource(R.drawable.user_icon); // Use same fallback as user search
             }
         });
     }

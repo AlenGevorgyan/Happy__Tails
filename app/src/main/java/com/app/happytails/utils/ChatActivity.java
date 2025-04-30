@@ -164,11 +164,18 @@ public class ChatActivity extends AppCompatActivity {
         FirebaseUtil.currentUserDetails().get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 UserModel currentUser = task.getResult().toObject(UserModel.class);
-                // Use SendNotification helper to send the notification
+                // Use SendNotification helper to send the notification via backend
                 SendNotification sendNotificationHelper = new SendNotification();
-                sendNotificationHelper.sendPushNotification(
+                sendNotificationHelper.sendChatMessage(
                         otherUser.getFcmToken(),
                         currentUser.getUsername(),
+                        message
+                );
+                // Also show a local notification for the sender
+                NotificationHelper.initNotificationChannel(this);
+                NotificationHelper.showInfoNotification(
+                        this,
+                        "Message sent to " + otherUser.getUsername(),
                         message
                 );
             } else {

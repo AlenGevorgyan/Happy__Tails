@@ -34,10 +34,43 @@
             android:id="@+id/back_btn"/>
     </RelativeLayout>
 
+    <LinearLayout
+        android:id="@+id/search_bar"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:orientation="horizontal"
+        android:layout_below="@id/toolbar">
+
+        <Button
+            android:id="@+id/userSearch"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/button_sharp_corners"
+            android:backgroundTint="@color/primary_color"
+            android:textSize="18dp"
+            android:text="Users" />
+
+        <Button
+            android:id="@+id/dogSearch"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/button_sharp_corners"
+            app:backgroundTint="@color/off_white"
+            android:textSize="18dp"
+            android:textColor="@color/primary_color"
+            android:text="Dogs"/>
+
+
+    </LinearLayout>
+
+
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/toolbar"
+        android:layout_below="@id/search_bar"
         android:layout_margin="10dp"
         android:id="@+id/search_user_layout">
 
@@ -63,5 +96,5 @@
     <FrameLayout
         android:id="@+id/search_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
 </RelativeLayout>

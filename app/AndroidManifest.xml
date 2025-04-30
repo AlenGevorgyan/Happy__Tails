@@ -74,7 +74,8 @@
 
                 <data
                     android:host="happytails.page.link"
-                    android:scheme="https" />
+                    android:scheme="https"
+                    android:pathPrefix="/UkMX" />
             </intent-filter>
         </activity> <!-- Splash Activity (Launcher) -->
         <activity

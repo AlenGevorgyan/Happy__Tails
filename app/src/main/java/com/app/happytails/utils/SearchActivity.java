@@ -1,22 +1,23 @@
 package com.app.happytails.utils;
 
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
-import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.happytails.R;
 import com.app.happytails.utils.Adapters.SearchUserAdapter;
+import com.app.happytails.utils.Adapters.SearchDogAdapter;
 import com.app.happytails.utils.Fragments.ProfileFragment.OnFragmentInteractionListener;
 import com.app.happytails.utils.model.UserSearchModel;
+import com.app.happytails.utils.model.DogSearchModel;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -30,7 +31,11 @@ public class SearchActivity extends AppCompatActivity implements OnFragmentInter
     private ImageButton backBtn;
     private RecyclerView resultsRecyclerView;
     private EditText searchInput;
+    private Button userButton, dogButton;
+
     private SearchUserAdapter userAdapter;
+    private SearchDogAdapter dogAdapter;
+    private boolean isUserSearchMode = true;
 
     private Timer searchDebounceTimer;
     private static final int SEARCH_DEBOUNCE_DELAY = 300;
@@ -42,8 +47,8 @@ public class SearchActivity extends AppCompatActivity implements OnFragmentInter
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
-
         initializeViews();
+        setupSearchModeToggle();
         setupSearchInputListener();
     }
 
@@ -51,19 +56,69 @@ public class SearchActivity extends AppCompatActivity implements OnFragmentInter
         backBtn = findViewById(R.id.back_btn);
         resultsRecyclerView = findViewById(R.id.search_user_recycler_view);
         searchInput = findViewById(R.id.search_username_input);
-
         resultsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        userAdapter = new SearchUserAdapter(getUserSearchOptions(""), this, getSupportFragmentManager());
-        resultsRecyclerView.setAdapter(userAdapter);
 
         backBtn.setOnClickListener(v -> onBackPressed());
+        userButton = findViewById(R.id.userSearch);
+        dogButton = findViewById(R.id.dogSearch);
+
+        switchToUserSearch();
+    }
+
+    private void setupSearchModeToggle() {
+        userButton.setOnClickListener(v -> {
+            if (!isUserSearchMode) {
+                switchToUserSearch();
+                performSearch(searchInput.getText().toString()); // keep query on switch
+            }
+        });
+
+        dogButton.setOnClickListener(v -> {
+            if (isUserSearchMode) {
+                switchToDogSearch();
+                performSearch(searchInput.getText().toString()); // keep query on switch
+            }
+        });
+    }
+
+    private void switchToUserSearch() {
+        isUserSearchMode = true;
+        searchInput.setHint("Search users...");
+        updateButtonStates(true);
+        initializeUserAdapter(searchInput.getText().toString());
+    }
+
+    private void switchToDogSearch() {
+        isUserSearchMode = false;
+        searchInput.setHint("Search dogs...");
+        updateButtonStates(false);
+        initializeDogAdapter(searchInput.getText().toString());
+    }
+
+    private void updateButtonStates(boolean userSelected) {
+        if (userSelected) {
+            userButton.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.primary_color));
+            userButton.setTextColor(ContextCompat.getColor(this, R.color.white));
+            dogButton.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.white));
+            dogButton.setTextColor(ContextCompat.getColor(this, R.color.primary_color));
+        } else {
+            dogButton.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.primary_color));
+            dogButton.setTextColor(ContextCompat.getColor(this, R.color.white));
+            userButton.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.white));
+            userButton.setTextColor(ContextCompat.getColor(this, R.color.primary_color));
+        }
     }
 
     private void setupSearchInputListener() {
         searchInput.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override public void afterTextChanged(Editable s) {}
-            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
                 debounceSearch(s.toString());
             }
         });
@@ -89,44 +144,81 @@ public class SearchActivity extends AppCompatActivity implements OnFragmentInter
         }, SEARCH_DEBOUNCE_DELAY);
     }
 
-    private void performSearch(String queryStr) {
-        queryStr = queryStr.toLowerCase();
-        reinitializeAdapter(queryStr);
+    private void performSearch(String query) {
+        if (isUserSearchMode) {
+            initializeUserAdapter(query);
+        } else {
+            initializeDogAdapter(query);
+        }
     }
 
     private void clearSearchResults() {
-        userAdapter.updateData(new ArrayList<>());
-        resultsRecyclerView.setVisibility(View.GONE);
+        if (isUserSearchMode && userAdapter != null) {
+            userAdapter.updateData(new ArrayList<>());
+        } else if (!isUserSearchMode && dogAdapter != null) {
+            dogAdapter.updateData(new ArrayList<>());
+        }
     }
 
-    private void reinitializeAdapter(String queryStr) {
-        userAdapter = new SearchUserAdapter(getUserSearchOptions(queryStr), this, getSupportFragmentManager());
+    private void initializeUserAdapter(String query) {
+        Query dbQuery = db.collection("users")
+                .orderBy("username_lower")
+                .startAt(query.toLowerCase())
+                .endAt(query.toLowerCase() + "\uf8ff");
+
+        FirestoreRecyclerOptions<UserSearchModel> options =
+                new FirestoreRecyclerOptions.Builder<UserSearchModel>()
+                        .setQuery(dbQuery, UserSearchModel.class)
+                        .build();
+
+        if (userAdapter != null) {
+            userAdapter.stopListening();
+        }
+
+        userAdapter = new SearchUserAdapter(options, this, getSupportFragmentManager());
         resultsRecyclerView.setAdapter(userAdapter);
         userAdapter.startListening();
-        resultsRecyclerView.setVisibility(View.VISIBLE);
     }
 
-    private FirestoreRecyclerOptions<UserSearchModel> getUserSearchOptions(String queryStr) {
-        Query query = db.collection("users")
-                .orderBy("username_lower")
-                .startAt(queryStr)
-                .endAt(queryStr + "\uf8ff");
+    private void initializeDogAdapter(String query) {
+        Query dbQuery = db.collection("dogs")
+                .orderBy("dog_lower")
+                .startAt(query.toLowerCase())
+                .endAt(query.toLowerCase() + "\uf8ff");
 
-        return new FirestoreRecyclerOptions.Builder<UserSearchModel>()
-                .setQuery(query, UserSearchModel.class)
-                .build();
+        FirestoreRecyclerOptions<DogSearchModel> options =
+                new FirestoreRecyclerOptions.Builder<DogSearchModel>()
+                        .setQuery(dbQuery, DogSearchModel.class)
+                        .build();
+
+        if (dogAdapter != null) {
+            dogAdapter.stopListening();
+        }
+
+        dogAdapter = new SearchDogAdapter(options, this, getSupportFragmentManager());
+        resultsRecyclerView.setAdapter(dogAdapter);
+        dogAdapter.startListening();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (isUserSearchMode && userAdapter != null) {
+            userAdapter.startListening();
+        } else if (!isUserSearchMode && dogAdapter != null) {
+            dogAdapter.startListening();
+        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (userAdapter != null) {
-            userAdapter.stopListening();
-        }
+        if (userAdapter != null) userAdapter.stopListening();
+        if (dogAdapter != null) dogAdapter.stopListening();
     }
 
     @Override
     public void onProfileFragmentClosed() {
-
+        // Optional: handle fragment closure
     }
 }
