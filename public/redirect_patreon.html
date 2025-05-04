@@ -1,13 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Opening App…</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting...</title>
+    <script>
+        // Function to parse query parameters from the URL
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // Extract the 'code' parameter
+        const code = getQueryParam('code');
+
+        // Function to handle redirection to the app
+        function redirectToApp() {
+            if (code) {
+                // Redirect to your app using the deep link
+                alert(code)
+                window.location.href = `https://rational-photon-380817.web.app/redirect_patreon?code=${code}`;
+            } else {
+                alert('Authorization code is missing. Please try again.');
+            }
+        }
+    </script>
 </head>
 <body>
-<h1>Almost there!</h1>
-<p>Your donation screen is opening in the HappyTails app.</p>
-<p>If you don’t have the app installed, please install it to continue.</p>
+<h1>Authorization Completed</h1>
+<p>Click the button below to return to the app.</p>
+<!-- Add a button to redirect to the app -->
+<button onclick="redirectToApp()">Return to App</button>
 </body>
 </html>

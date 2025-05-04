@@ -1,10 +1,7 @@
 package com.app.happytails.utils.Fragments;
 
 import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,8 +21,6 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.app.happytails.R;
-import com.app.happytails.utils.Fragments.GalleryFragment;
-import com.app.happytails.utils.Fragments.SupportersFragment;
 import com.app.happytails.utils.PatreonOAuthHelper;
 import com.bumptech.glide.Glide;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -38,20 +33,11 @@ import com.google.firebase.firestore.ListenerRegistration;
 import java.util.ArrayList;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import java.io.IOException;
 
 public class DogProfile extends Fragment {
 
     private static final String TAG = "DogProfile";
-    private static final String CLIENT_ID = "rInp7p5sJ3MZwEIh4_wZaljG1UISzx2R7w-hPVhPbe1XfZJ44-6nQX9jtzvzQLWc"; // Replace with your actual Client ID
-    private static final String REDIRECT_URI = "https://happytails.page.link/UkMX"; // Replace with your actual Redirect URI (e.g., your Firebase Dynamic Link)
 
     private TextView dogNameTv, dogDescriptionTv, urgencyLevelTv;
     private TextView fundingAmountTv, targetAmountTv;
@@ -94,7 +80,7 @@ public class DogProfile extends Fragment {
 
         navigationView.setOnNavigationItemSelectedListener(this::handleNavigation);
         backBtn.setOnClickListener(v -> handleBackPress());
-        donateButton.setOnClickListener(v -> startDonationProcess());
+        donateButton.setOnClickListener(v -> initiateDonation());
 
         return view;
     }
@@ -163,132 +149,50 @@ public class DogProfile extends Fragment {
         }
     }
 
-    private void startDonationProcess() {
-        SharedPreferences prefs = requireActivity().getSharedPreferences("PatreonPrefs", Context.MODE_PRIVATE);
-        String accessToken = prefs.getString("patreon_access_token", null);
-
-        if (accessToken != null) {
-            // Use helper to open the campaign page for this dog
-            PatreonOAuthHelper.openCreatorCampaigns(requireContext(), accessToken, dogId);
-        } else {
-            startOAuthFlow();
+    @Override
+    public void onResume() {
+        super.onResume();
+        Uri data = requireActivity().getIntent().getData();
+        if (data != null) {
+            handlePatreonReturn(data);
+            requireActivity().getIntent().setData(null);  // Clear intent data
         }
     }
 
-    private void startOAuthFlow() {
-        // Use helper to get the OAuth URL with all required scopes and state
-        String authUrl = PatreonOAuthHelper.getAuthorizationUrl();
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(authUrl));
-        startActivity(intent);
-    }
-
-    // Call this from MainActivity or wherever you handle deep links
-    public void handleOAuthRedirect(Uri data) {
-        Log.d(TAG, "Handling OAuth Redirect in DogProfile (from Browser): " + data);
-        // Verify state parameter for CSRF protection
-        if (!PatreonOAuthHelper.verifyOAuthResponse(data)) {
-            Toast.makeText(requireContext(), "Invalid OAuth state. Please try again.", Toast.LENGTH_SHORT).show();
+    private void initiateDonation() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            Toast.makeText(getContext(), "Please login to donate", Toast.LENGTH_SHORT).show();
             return;
         }
-        String code = data.getQueryParameter("code");
-        if (code != null) {
-            sendCodeToServer(code);
-        } else if (data.getQueryParameter("error") != null) {
-            String error = data.getQueryParameter("error");
-            String errorDescription = data.getQueryParameter("error_description");
-            Log.e(TAG, "OAuth Error in Redirect (Browser): " + error + " - " + errorDescription);
-            Toast.makeText(requireContext(), "Patreon authentication failed.", Toast.LENGTH_SHORT).show();
-        }
+        PatreonOAuthHelper.startPatreonOAuth(requireContext());
     }
 
-    private void sendCodeToServer(String code) {
-        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
-        if (currentUser == null) {
-            Toast.makeText(requireContext(), "User not authenticated.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        String uid = currentUser.getUid();
-
-        // Use OkHttp to send the code to your backend (as before)
-        RequestBody requestBody = new FormBody.Builder()
-                .add("code", code)
-                .add("redirect_uri", REDIRECT_URI)
-                .add("firebaseUid", uid)
-                .build();
-
-        Request request = new Request.Builder()
-                .url("https://us-central1-rational-photon-380817.cloudfunctions.net/exchangePatreonCode") // Replace with your Cloud Function URL
-                .post(requestBody)
-                .build();
-
-        httpClient.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                if (isAdded()) {
-                    requireActivity().runOnUiThread(() ->
-                            Toast.makeText(getContext(), "Error communicating with the backend.", Toast.LENGTH_LONG).show());
-                    Log.e(TAG, "Error sending code to backend: " + e.getMessage());
-                }
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                final String responseData = response.body().string();
-                Log.d(TAG, "Backend response: " + responseData);
-
-                if (response.isSuccessful()) {
-                    if (isAdded()) {
-                        requireActivity().runOnUiThread(() -> {
-                            Toast.makeText(getContext(), "Patreon authentication successful.", Toast.LENGTH_SHORT).show();
-                            onPatreonAuthSuccess(); // Notify DogProfile
-                        });
-                    }
-                } else {
-                    Log.e(TAG, "Backend error during token exchange: " + response.code() + " - " + responseData);
-                    if (isAdded()) {
-                        requireActivity().runOnUiThread(() ->
-                                Toast.makeText(getContext(), "Backend error during token exchange.", Toast.LENGTH_LONG).show());
-                    }
-                }
-            }
-        });
-    }
-
-    public void onPatreonAuthSuccess() {
-        Toast.makeText(getContext(), "Patreon authentication successful!", Toast.LENGTH_SHORT).show();
-        // After successful auth, open the campaign page for this dog
-        SharedPreferences prefs = requireActivity().getSharedPreferences("PatreonPrefs", Context.MODE_PRIVATE);
-        String accessToken = prefs.getString("patreon_access_token", null);
-        if (accessToken != null) {
-            PatreonOAuthHelper.openCreatorCampaigns(requireContext(), accessToken, dogId);
-        } else {
-            Toast.makeText(getContext(), "Access token not found. Please try again.", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    // Call this from MainActivity or deep link handler after Patreon redirects back
-    public void handlePatreonReturn(Uri data) {
-        // Check if this is a successful donation
+    private void handlePatreonReturn(Uri data) {
         if (PatreonOAuthHelper.checkDonationSuccess(data)) {
             double amount = PatreonOAuthHelper.getPledgeAmount(data);
             String returnedDogId = PatreonOAuthHelper.getDogIdFromSuccessUrl(data);
-            if (returnedDogId != null && !returnedDogId.isEmpty()) {
+            if (returnedDogId != null && !returnedDogId.isEmpty() && returnedDogId.equals(dogId)) {
                 PatreonOAuthHelper.updateFundingAmount(returnedDogId, amount, new PatreonOAuthHelper.DonationCallback() {
                     @Override
                     public void onSuccess(double newAmount, int fundingPercentage) {
                         requireActivity().runOnUiThread(() -> {
                             Toast.makeText(getContext(), "Thank you for your donation!", Toast.LENGTH_LONG).show();
+                            fundingAmountTv.setText(String.format("$%.2f", newAmount));
+                            fundingProgress.setProgress(fundingPercentage);
                         });
                     }
 
                     @Override
                     public void onFailure(String errorMessage) {
                         requireActivity().runOnUiThread(() ->
-                            Toast.makeText(getContext(), "Failed to update funding: " + errorMessage, Toast.LENGTH_LONG).show()
+                                Toast.makeText(getContext(), "Failed to update funding: " + errorMessage, Toast.LENGTH_LONG).show()
                         );
                     }
                 });
             }
+        } else {
+            Toast.makeText(getContext(), "Donation failed, please try again.", Toast.LENGTH_SHORT).show();
         }
     }
 

@@ -2,15 +2,15 @@ package com.app.happytails.utils.model;
 
 import com.google.firebase.Timestamp;
 
-public class ChatMessageModel {
+public class MessageModel {
     private String message;
     private String senderId;
     private Timestamp timestamp;
 
-    public ChatMessageModel() {
+    public MessageModel() {
     }
 
-    public ChatMessageModel(String message, String senderId, Timestamp timestamp) {
+    public MessageModel(String message, String senderId, Timestamp timestamp) {
         this.message = message;
         this.senderId = senderId;
         this.timestamp = timestamp;

@@ -17,6 +17,7 @@ public class HomeModel {
     private ArrayList<String> donationsAmount;
     private int urgencylevel;
     private String patreonUrl;
+    private String accessToken;
 
     // Empty constructor for Firestore
     public HomeModel() {
@@ -35,7 +36,7 @@ public class HomeModel {
 
     public HomeModel(String creator, String dogId, String dogName,
                      int fundingPercentage, ArrayList<String> galleryImages, String mainImage,
-                     ArrayList<String> supporters, double fundingAmount, ArrayList<String> donationsAmount, int urgencyLevel, String patreonUrl) {
+                     ArrayList<String> supporters, double fundingAmount, ArrayList<String> donationsAmount, int urgencyLevel, String patreonUrl, String accessToken) {
         this.creator = creator;
         this.dogName = dogName;
         this.dog_keywords = generateThreeCharKeywords(dogName);
@@ -49,9 +50,28 @@ public class HomeModel {
         this.donationsAmount = donationsAmount;
         this.urgencylevel = urgencyLevel;
         this.patreonUrl = patreonUrl;
+        this.accessToken = accessToken;
     }
 
     // Getters and setters
+
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
+    }
+
+    public String getPatreonUrl() {
+        return patreonUrl;
+    }
+
+    public void setPatreonUrl(String patreonUrl) {
+        this.patreonUrl = patreonUrl;
+    }
+
     public String getCreator() { return creator; }
     public void setCreator(String creator) { this.creator = creator; }
     public int getUrgencylevel() {

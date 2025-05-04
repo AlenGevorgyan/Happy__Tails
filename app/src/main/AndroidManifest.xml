@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.app.happytails">
@@ -25,13 +24,15 @@
         android:roundIcon="@drawable/app_icon"
         android:supportsRtl="true"
         android:theme="@style/Base.Theme.HappyTails">
+
         <service
             android:name=".utils.FMCNotificationService"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.app.happytails.provider"
@@ -42,6 +43,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
         <activity
             android:name=".utils.FollowingsActivity"
             android:exported="false" />
@@ -75,27 +77,34 @@
                     android:scheme="https" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".utils.SplashActivity"
-            android:exported="true">
+            android:exported="true"> <!-- Make it exported -->
             <intent-filter>
+                <!-- Launcher intent to make SplashActivity the entry point -->
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- Handle deep links for SplashActivity -->
+            <intent-filter>
+                <!-- Deep link handling -->
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="rational-photon-380817.web.app"
+                    android:path="/redirect_patreon" />
+            </intent-filter>
         </activity>
+
+        <!-- Other activities, such as MainActivity -->
         <activity
-        android:name=".utils.MainActivity"
-        android:exported="true"
-        android:launchMode="singleTask">
-        <intent-filter android:autoVerify="true">
-            <action android:name="android.intent.action.VIEW" />
-            <category android:name="android.intent.category.DEFAULT" />
-            <category android:name="android.intent.category.BROWSABLE" />
-            <data
-                android:scheme="https"
-                android:host="happytails.page.link"
-                android:pathPrefix="/UkMX" />
-        </intent-filter>
-    </activity>
+            android:name=".utils.MainActivity"
+            android:exported="false">
+            <!-- No intent filters needed here unless MainActivity also handles deep links -->
+        </activity>
     </application>
 </manifest>

@@ -1,7 +1,6 @@
 package com.app.happytails.utils.Fragments;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -59,8 +58,7 @@ public class CreateFragment2 extends Fragment {
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_create, container, false);
     }
 
@@ -103,7 +101,6 @@ public class CreateFragment2 extends Fragment {
     private void handleNextButtonClick() {
         String name = dogName.getText().toString();
         String description = descriptionED.getText().toString();
-        String creatorId = auth.getCurrentUser().getUid();
         String patreon_url = patreonUrl.getText().toString();
 
         if (name.isEmpty() || description.isEmpty()) {
@@ -112,88 +109,32 @@ public class CreateFragment2 extends Fragment {
         }
 
         if (mainImageUri != null) {
-            // Show progress bar and disable next button
-            progbar.setVisibility(View.VISIBLE);
-            nextButton.setEnabled(false);
-
-            uploadMainImageAndCreatePost(creatorId, name, description, urgencyLevel, patreon_url);
+            navigateToOAuthFragment(name, description, urgencyLevel, patreon_url, mainImageUri, galleryUris);
         } else {
             Toast.makeText(getContext(), "Please select a main image", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void uploadMainImageAndCreatePost(String creatorId, String name, String description, int urgencyLevel, String patreon_url) {
-        StorageReference mainImageRef = storage.getReference().child("dog_images/" + creatorId + "/main_image.jpg");
-        UploadTask uploadTask = mainImageRef.putFile(mainImageUri);
+    private void navigateToOAuthFragment(String name, String description, int urgencyLevel, String patreonUrl, Uri mainImageUri, ArrayList<Uri> galleryUris) {
+        OAuthFragment oAuthFragment = new OAuthFragment();
 
-        uploadTask.addOnSuccessListener(taskSnapshot -> {
-            mainImageRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                // Once the main image is uploaded, proceed to upload gallery images
-                ArrayList<String> galleryImageUrls = new ArrayList<>();
-                uploadGalleryImages(creatorId, name, description, urgencyLevel, uri.toString(), galleryImageUrls, patreon_url);
-            });
-        }).addOnFailureListener(e -> {
-            // Hide progress bar and enable next button
-            progbar.setVisibility(View.GONE);
-            nextButton.setEnabled(true);
-            Toast.makeText(getContext(), "Failed to upload main image", Toast.LENGTH_SHORT).show();
-        });
-    }
+        // Bundle all the necessary data
+        Bundle args = new Bundle();
+        args.putString("name", name);
+        args.putString("description", description);
+        args.putInt("urgencyLevel", urgencyLevel);
+        args.putString("patreonUrl", patreonUrl);
+        args.putParcelable("mainImageUri", mainImageUri);
+        args.putParcelableArrayList("galleryUris", galleryUris);
 
-    private void uploadGalleryImages(String creatorId, String name, String description, int urgencyLevel, String mainImageUrl, ArrayList<String> galleryImageUrls, String patreon_url) {
-        StorageReference galleryRef = storage.getReference().child("dog_images/" + creatorId + "/gallery/");
+        oAuthFragment.setArguments(args);
 
-        for (int i = 0; i < galleryUris.size(); i++) {
-            Uri galleryUri = galleryUris.get(i);
-            StorageReference fileRef = galleryRef.child("gallery_" + i + ".jpg");
-            UploadTask uploadTask = fileRef.putFile(galleryUri);
-
-            uploadTask.addOnSuccessListener(taskSnapshot -> {
-                fileRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                    galleryImageUrls.add(uri.toString());
-
-                    // Check if all gallery images have been uploaded
-                    if (galleryImageUrls.size() == galleryUris.size()) {
-                        createDogInFirestore(creatorId, name, description, urgencyLevel, mainImageUrl, galleryImageUrls, patreon_url);
-                    }
-                });
-            }).addOnFailureListener(e -> {
-                // Hide progress bar and enable next button
-                progbar.setVisibility(View.GONE);
-                nextButton.setEnabled(true);
-                Toast.makeText(getContext(), "Failed to upload gallery image", Toast.LENGTH_SHORT).show();
-            });
-        }
-    }
-
-    private void createDogInFirestore(String creatorId, String name, String description, int urgencyLevel, String mainImageUrl, ArrayList<String> galleryImageUrls, String patreon_url) {
-        String dogId = firestore.collection("dogs").document().getId();
-
-        HomeModel dog = new HomeModel(creatorId, dogId, name, 0, galleryImageUrls, mainImageUrl, new ArrayList<>(), 0.0, new ArrayList<>(), urgencyLevel, patreon_url);
-
-        firestore.collection("dogs").document(dogId).set(dog)
-                .addOnSuccessListener(aVoid -> {
-                    // Hide progress bar and enable next button
-                    progbar.setVisibility(View.GONE);
-                    nextButton.setEnabled(true);
-                    Toast.makeText(getContext(), "Dog account created successfully!", Toast.LENGTH_SHORT).show();
-                    navigateToHomeFragment();
-                })
-                .addOnFailureListener(e -> {
-                    // Hide progress bar and enable next button
-                    progbar.setVisibility(View.GONE);
-                    nextButton.setEnabled(true);
-                    Toast.makeText(getContext(), "Failed to create dog account", Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    private void navigateToHomeFragment() {
+        // Navigate to OAuthFragment
         FragmentManager fragmentManager = getParentFragmentManager();
-        Fragment homeFragment = new HomeFragment();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, homeFragment);
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(R.id.fragment_container, oAuthFragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
     private void openMainImageGallery() {
