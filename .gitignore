@@ -13,3 +13,41 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# API keys and secrets
+**/*/APIKeys.java
+**/*/google-services.json
+**/*/keys.properties
+**/*/secrets.xml
+**/*/secret.properties
+**/ApiKeys.java
+
+# Firebase config
+google-services.json
+
+# Keystore files
+*.jks
+*.keystore
+
+# External native build folder generated in Android Studio
+.externalNativeBuild
+
+# Signing configs
+signing.properties
+
+# Log files
+*.log
+
+# Android Studio generated files and folders
+/app/debug
+/app/release
+/app/production
+captures/
+.navigation/
+output.json
+
+# Crashlytics configuration
+com_crashlytics_export_strings.xml
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
