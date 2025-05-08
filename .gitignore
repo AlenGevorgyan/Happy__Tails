@@ -24,6 +24,8 @@ local.properties
 
 # Firebase config
 google-services.json
+*firebase-adminsdk*.json
+rational-photon-380817-firebase-adminsdk-kq8br-29f1096e51.json
 
 # Keystore files
 *.jks
