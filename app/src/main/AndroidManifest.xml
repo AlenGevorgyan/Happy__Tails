@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.app.happytails">
+
+    <!-- Required permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -13,7 +15,7 @@
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
 
     <application
-        android:name=".utils.CloudinaryUtil"
+        android:name=".utils.ApplicationUtil"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -25,14 +27,7 @@
         android:supportsRtl="true"
         android:theme="@style/Base.Theme.HappyTails">
 
-        <service
-            android:name=".utils.FMCNotificationService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
-
+        <!-- FileProvider for sharing files -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.app.happytails.provider"
@@ -44,27 +39,40 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <service
+            android:name=".utils.FirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="default_channel" />
+
+        <!-- SplashActivity: entry point and OAuth redirect handler -->
         <activity
-            android:name=".utils.FollowingsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".utils.FollowersActivity"
-            android:exported="false" />
-        <activity
-            android:name=".utils.ChatActivity"
-            android:exported="false" />
-        <activity
-            android:name=".utils.ForgetPassword"
-            android:exported="false" />
-        <activity
-            android:name=".utils.SearchActivity"
-            android:exported="false" />
-        <activity
-            android:name=".utils.SignInActivity"
-            android:exported="false" />
-        <activity
-            android:name=".utils.LoginOtpActivity"
-            android:exported="false" />
+            android:name=".utils.SplashActivity"
+            android:exported="true">
+            <intent-filter>
+                <!-- Launcher -->
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <!-- Deep link for Patreon OAuth callback -->
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="rational-photon-380817.web.app"
+                    android:pathPrefix="/redirect_patreon" />
+            </intent-filter>
+        </activity>
+
+        <!-- LoginActivity: handles Firebase Dynamic Links -->
         <activity
             android:name=".utils.LoginActivity"
             android:exported="true">
@@ -73,38 +81,22 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
-                    android:host="happytails.page.link"
-                    android:scheme="https" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:name=".utils.SplashActivity"
-            android:exported="true"> <!-- Make it exported -->
-            <intent-filter>
-                <!-- Launcher intent to make SplashActivity the entry point -->
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-
-            <!-- Handle deep links for SplashActivity -->
-            <intent-filter>
-                <!-- Deep link handling -->
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data
                     android:scheme="https"
-                    android:host="rational-photon-380817.web.app"
-                    android:path="/redirect_patreon" />
+                    android:host="happytails.page.link" />
             </intent-filter>
         </activity>
 
-        <!-- Other activities, such as MainActivity -->
-        <activity
-            android:name=".utils.MainActivity"
-            android:exported="false">
-            <!-- No intent filters needed here unless MainActivity also handles deep links -->
-        </activity>
+        <!-- Other app screens (no deep‐link filters needed) -->
+        <activity android:name=".utils.SignInActivity" android:exported="false" />
+        <activity android:name=".utils.LoginOtpActivity" android:exported="false" />
+        <activity android:name=".utils.ForgetPassword" android:exported="false" />
+        <activity android:name=".utils.SearchActivity" android:exported="false" />
+        <activity android:name=".utils.ChatActivity" android:exported="false" />
+        <activity android:name=".utils.FollowersActivity" android:exported="false" />
+        <activity android:name=".utils.FollowingsActivity" android:exported="false" />
+
+        <!-- MainActivity: your primary in‐app nav host -->
+        <activity android:name=".utils.MainActivity" android:exported="false" />
+
     </application>
 </manifest>

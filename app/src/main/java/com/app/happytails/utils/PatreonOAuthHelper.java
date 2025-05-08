@@ -3,6 +3,7 @@ package com.app.happytails.utils;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -26,8 +27,8 @@ import okhttp3.Response;
 public class PatreonOAuthHelper {
 
     private static final String TAG = "PatreonOAuthHelper";
-    private static final String CLIENT_ID = "G-CclZkqwQw7ywcMRqtnWElPbMVww0TKygu3e0UNeO_TuYpdU7o_2Wqror-rItER"; // Replace with your Patreon client ID
-    private static final String CLIENT_SECRET = "CFFhBdm-p8pa1wTNZoAMwwF8CFyPeGQp6-ZS8dtdtS49MIEgT6Sb5otK2FPfFMuB"; // Replace with your Patreon client secret
+    private static final String CLIENT_ID = APIKeys.PATREON_CLIENT_ID; // Replace with your Patreon client ID
+    private static final String CLIENT_SECRET = APIKeys.PATREON_CLIENT_SECRET; // Replace with your Patreon client secret
     private static final String REDIRECT_URI = "https://rational-photon-380817.web.app/redirect_patreon";
     private static final String TOKEN_URL = "https://www.patreon.com/api/oauth2/token";
     private static final String CAMPAIGNS_URL = "https://www.patreon.com/api/oauth2/v2/campaigns";

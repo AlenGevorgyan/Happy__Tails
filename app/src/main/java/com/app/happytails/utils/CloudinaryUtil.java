@@ -15,5 +15,6 @@ public class CloudinaryUtil extends Application {
         config.put("api_key", "936129888839456");
         config.put("api_secret", "K4vL432ZheS8N6uJARlvzUh1Yww");
         MediaManager.init(this, config);
+
     }
 }

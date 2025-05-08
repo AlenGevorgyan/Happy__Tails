@@ -11,6 +11,7 @@ import android.view.Window;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -28,6 +29,7 @@ import com.app.happytails.utils.Fragments.ProfileFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 public class MainActivity extends AppCompatActivity implements ProfileFragment.OnFragmentInteractionListener {
@@ -36,11 +38,15 @@ public class MainActivity extends AppCompatActivity implements ProfileFragment.O
     private BottomNavigationView bottomNav;
     private ImageButton searchButton;
     private Toolbar toolbar;
+    private ActivityResultLauncher<String> notificationPermissionLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Register the permission launcher
+        notificationPermissionLauncher = NotificationHelper.createPermissionLauncher(this);
 
         // Hide the default action bar
         if (getSupportActionBar() != null) {
@@ -67,10 +73,39 @@ public class MainActivity extends AppCompatActivity implements ProfileFragment.O
         // Handle incoming intent (OAuth redirect or notification clicks)
         handleIntent(getIntent());
 
-        // Get FCM token if user is authenticated and email is verified
+        // Update FCM token
+        updateFCMToken();
+        
+        // Check notification permission
+        checkNotificationPermission();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh the FCM token when returning to the app
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser != null && currentUser.isEmailVerified()) {
-            getFCMToken();
+        if (currentUser != null) {
+            updateFCMToken();
+        }
+    }
+
+    private void checkNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (!NotificationHelper.hasNotificationPermission(this)) {
+                // Show dialog explaining why we need the permission
+                Toast.makeText(this, "Please enable notifications to receive important updates", 
+                        Toast.LENGTH_LONG).show();
+                
+                // Request the notification permission
+                NotificationHelper.requestNotificationPermissionWithLauncher(notificationPermissionLauncher);
+            } else {
+                // Permission already granted, initialize notification channels
+                FirebaseMessagingService.createNotificationChannels();
+            }
+        } else {
+            // For Android 12 and below, just initialize the channels
+            FirebaseMessagingService.createNotificationChannels();
         }
     }
 
@@ -111,11 +146,80 @@ public class MainActivity extends AppCompatActivity implements ProfileFragment.O
             return;
         }
 
-        // Check for notification click
+        // Check for notification navigation intent from SplashActivity
+        if (intent.getBooleanExtra("from_notification", false)) {
+            Log.d(TAG, "Processing notification navigation");
+            processNotificationNavigation(intent);
+            return;
+        }
+
+        // Check for direct notification extras
+        if (intent.hasExtra("userId") || intent.hasExtra("senderId") || intent.hasExtra("chatRoomId")) {
+            processNotificationNavigation(intent);
+        }
+    }
+
+    /**
+     * Process navigation based on notification data
+     */
+    private void processNotificationNavigation(Intent intent) {
+        // Check if this is a chat notification
+        if (intent.hasExtra("senderId")) {
+            String senderId = intent.getStringExtra("senderId");
+            Log.d(TAG, "Notification for chat with user: " + senderId);
+            openChatWithUser(senderId);
+            return;
+        }
+
+        // Profile notification
         if (intent.hasExtra("userId")) {
             String userId = intent.getStringExtra("userId");
+            Log.d(TAG, "Notification for user profile: " + userId);
             loadProfileFragment(userId);
+            return;
         }
+
+        // Chat room notification
+        if (intent.hasExtra("chatRoomId")) {
+            String chatRoomId = intent.getStringExtra("chatRoomId");
+            Log.d(TAG, "Notification for chat room: " + chatRoomId);
+            // Handle chat room - may need to get users from chatroom ID
+            String[] userIds = chatRoomId.split("_");
+            for (String userId : userIds) {
+                if (!userId.equals(FirebaseUtil.currentUserId())) {
+                    openChatWithUser(userId);
+                    break;
+                }
+            }
+        }
+    }
+
+    private void openChatWithUser(String userId) {
+        // Fetch user details and open chat
+        FirebaseFirestore.getInstance().collection("users").document(userId)
+            .get()
+            .addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    // Create a UserModel from the document
+                    String username = documentSnapshot.getString("username");
+                    String email = documentSnapshot.getString("email");
+                    String fcmToken = documentSnapshot.getString("fcmToken");
+                    
+                    // Use the ChatActivity's factory method to create the intent
+                    Intent intent = ChatActivity.newInstance(this, userId, username, email, fcmToken);
+                    
+                    // Start the ChatActivity
+                    startActivity(intent);
+                    
+                    Log.d(TAG, "Navigating to chat with user: " + username);
+                } else {
+                    Toast.makeText(this, "Could not find user details", Toast.LENGTH_SHORT).show();
+                }
+            })
+            .addOnFailureListener(e -> {
+                Log.e(TAG, "Error fetching user data", e);
+                Toast.makeText(this, "Error opening chat", Toast.LENGTH_SHORT).show();
+            });
     }
 
     private void navigateToOAuthFragment(String authCode) {
@@ -170,14 +274,26 @@ public class MainActivity extends AppCompatActivity implements ProfileFragment.O
         toggleToolbarVisibility(!disableToolbar);
     }
 
-    private void getFCMToken() {
+    private void updateFCMToken() {
         FirebaseMessaging.getInstance().getToken()
-                .addOnSuccessListener(token -> {
-                    FirebaseUtil.currentUserDetails().update("fcmToken", token)
-                            .addOnSuccessListener(aVoid -> Log.d(TAG, "FCM Token updated successfully"))
-                            .addOnFailureListener(e -> Log.e(TAG, "Failed to update FCM Token", e));
-                })
-                .addOnFailureListener(e -> Log.e(TAG, "Failed to retrieve FCM Token", e));
+            .addOnCompleteListener(task -> {
+                if (!task.isSuccessful()) {
+                    Log.w(TAG, "Failed to get FCM token", task.getException());
+                    return;
+                }
+                
+                String token = task.getResult();
+                Log.d(TAG, "FCM Token: " + token);
+                
+                // Save token to user document in Firestore
+                String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(userId)
+                    .update("fcmToken", token)
+                    .addOnSuccessListener(aVoid -> Log.d(TAG, "FCM token saved successfully"))
+                    .addOnFailureListener(e -> Log.e(TAG, "Failed to save FCM token", e));
+            });
     }
 
     @Override
