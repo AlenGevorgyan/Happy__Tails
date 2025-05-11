@@ -89,26 +89,9 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
     }
 
     private void sendNotification(String title, String messageBody, String channelId, Map<String, String> data) {
-        // Create intent based on notification type
-        Intent intent;
-        
-        // Check if this is a chat notification
-        if (data != null && data.containsKey("senderId")) {
-            // This is a chat notification, open the ChatActivity directly
-            intent = new Intent(this, MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            
-            // Add sender ID to navigate to the specific chat
-            String senderId = data.get("senderId");
-            intent.putExtra("userId", senderId);
-            
-            // Log that we're handling a chat notification
-            Log.d(TAG, "Creating intent for chat notification from user: " + senderId);
-        } else {
-            // Regular notification, just open MainActivity
-            intent = new Intent(this, MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        }
+        // Create intent for MainActivity (no special navigation)
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         
         // Add any extra data to the intent
         if (data != null) {
@@ -120,7 +103,7 @@ public class FirebaseMessagingService extends com.google.firebase.messaging.Fire
         // Create random request code to ensure PendingIntent is unique
         int requestCode = (int) System.currentTimeMillis();
         
-        // Create appropriate PendingIntent based on notification type
+        // Create PendingIntent
         PendingIntent pendingIntent = PendingIntent.getActivity(
             this, 
             requestCode, 

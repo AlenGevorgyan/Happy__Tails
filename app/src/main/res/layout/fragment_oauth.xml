@@ -74,6 +74,20 @@
             android:textColor="@color/primary_color"
             android:text="Connect to Patreon" />
 
+        <TextView
+            android:id="@+id/successTextViewOAuth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/oauthTitle"
+            android:layout_marginTop="25dp"
+            android:layout_marginHorizontal="20dp"
+            android:text="Patreon Connected Successfully!"
+            android:textSize="18sp"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:visibility="gone" />
+
         <ProgressBar
             android:id="@+id/progressBarOAuth"
             android:layout_width="wrap_content"

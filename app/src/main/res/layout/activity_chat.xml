@@ -56,42 +56,60 @@
         android:layout_above="@id/bottom_layout"
         android:id="@+id/chat_recycler_view"/>
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:padding="8dp"
         android:id="@+id/bottom_layout">
 
+        <ImageButton
+            android:id="@+id/buttonSendImage"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_image"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside"
+            />
+
+
         <EditText
-            android:layout_width="match_parent"
+            android:id="@+id/chat_message_input"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginBottom="10dp"
-            android:layout_toLeftOf="@id/message_send_btn"
+            android:layout_weight="1"
+            android:hint="Write message here"
+            android:minHeight="48dp"
+            android:padding="10dp"
             android:background="@drawable/edit_text_rounded_corner"
             android:elevation="4dp"
-            android:hint="Write message here"
-            android:padding="10dp"
-            android:id="@+id/chat_message_input"/>
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"/>
 
         <ImageButton
+            android:id="@+id/message_send_btn"
             android:layout_width="52dp"
             android:layout_height="52dp"
             android:src="@drawable/icon_send"
-            android:layout_alignParentEnd="true"
-            android:layout_centerInParent="true"
             android:background="?attr/selectableItemBackgroundBorderless"
             app:tint="@color/primary_color"
-            android:id="@+id/message_send_btn"
             android:padding="8dp"
-            android:layout_marginStart="10dp"
             />
 
-    </RelativeLayout>
+    </LinearLayout>
+
+    <!-- ImageView for displaying recorded voice message thumbnail or icon -->
+    <ImageView
+        android:id="@+id/imagePreview"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_alignParentStart="true"
+        android:layout_above="@id/bottom_layout"
+        android:layout_margin="8dp"
+        android:visibility="gone"
+        android:scaleType="centerCrop"/>
 
 
 </RelativeLayout>

@@ -1,6 +1,5 @@
 package com.app.happytails.utils.Fragments;
 
-import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -48,7 +47,6 @@ public class DogProfile extends Fragment {
     private Button donateButton;
 
     private String dogId;
-    private String patreonUrl;
     private FirebaseFirestore db;
     private ListenerRegistration dogListener;
     private ArrayList<String> galleryImageUrls, supporters;
@@ -75,8 +73,12 @@ public class DogProfile extends Fragment {
         firebaseAuth = FirebaseAuth.getInstance();
         httpClient = new OkHttpClient();
 
-        if (getArguments() != null) dogId = getArguments().getString("dogId");
-        if (dogId != null) loadDogData();
+        if (getArguments() != null) {
+            dogId = getArguments().getString("dogId");
+        }
+        if (dogId != null) {
+            loadDogData();
+        }
 
         navigationView.setOnNavigationItemSelectedListener(this::handleNavigation);
         backBtn.setOnClickListener(v -> handleBackPress());
@@ -96,10 +98,8 @@ public class DogProfile extends Fragment {
             dogNameTv.setText(snapshot.getString("dogName"));
             dogDescriptionTv.setText(snapshot.getString("description"));
 
-            currentAmount = snapshot.getDouble("fundingAmount") != null ?
-                    snapshot.getDouble("fundingAmount") : 0.0;
-            targetAmount = snapshot.getDouble("targetAmount") != null ?
-                    snapshot.getDouble("targetAmount") : 0.0;
+            currentAmount = snapshot.getDouble("fundingAmount") != null ? snapshot.getDouble("fundingAmount") : 0.0;
+            targetAmount = snapshot.getDouble("targetAmount") != null ? snapshot.getDouble("targetAmount") : 0.0;
 
             fundingAmountTv.setText(String.format("$%.2f", currentAmount));
             targetAmountTv.setText(String.format("$%.2f", targetAmount));
@@ -117,8 +117,6 @@ public class DogProfile extends Fragment {
 
             galleryImageUrls = (ArrayList<String>) snapshot.get("galleryImages");
             supporters = (ArrayList<String>) snapshot.get("supporters");
-
-            patreonUrl = snapshot.getString("patreonUrl");
         });
     }
 
@@ -154,13 +152,18 @@ public class DogProfile extends Fragment {
         super.onResume();
         Uri data = requireActivity().getIntent().getData();
         if (data != null) {
-            handlePatreonReturn(data);
-            requireActivity().getIntent().setData(null);  // Clear intent data
+            String code = data.getQueryParameter("code");
+            if (code != null) {
+                handleOAuthCode(code);
+            } else {
+                Toast.makeText(getContext(), "Invalid OAuth response", Toast.LENGTH_SHORT).show();
+            }
+            requireActivity().getIntent().setData(null); // Clear intent to prevent reprocessing
         }
     }
 
     private void initiateDonation() {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseUser user = firebaseAuth.getCurrentUser();
         if (user == null) {
             Toast.makeText(getContext(), "Please login to donate", Toast.LENGTH_SHORT).show();
             return;
@@ -168,32 +171,69 @@ public class DogProfile extends Fragment {
         PatreonOAuthHelper.startPatreonOAuth(requireContext());
     }
 
-    private void handlePatreonReturn(Uri data) {
-        if (PatreonOAuthHelper.checkDonationSuccess(data)) {
-            double amount = PatreonOAuthHelper.getPledgeAmount(data);
-            String returnedDogId = PatreonOAuthHelper.getDogIdFromSuccessUrl(data);
-            if (returnedDogId != null && !returnedDogId.isEmpty() && returnedDogId.equals(dogId)) {
-                PatreonOAuthHelper.updateFundingAmount(returnedDogId, amount, new PatreonOAuthHelper.DonationCallback() {
+    public void handleDeepLink(Uri data) {
+        if (data != null && "https".equals(data.getScheme())) {
+            String code = data.getQueryParameter("code");
+            if (code != null) {
+                handleOAuthCode(code);
+            } else {
+                Toast.makeText(getContext(), "Invalid OAuth response", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void handleOAuthCode(String code) {
+        String userId = firebaseAuth.getCurrentUser() != null ? firebaseAuth.getCurrentUser().getUid() : null;
+        if (userId == null) {
+            Log.e(TAG, "No user signed in");
+            Toast.makeText(getContext(), "User not signed in", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        PatreonOAuthHelper.exchangeCodeForToken(requireContext(), code, new PatreonOAuthHelper.TokenCallback() {
+            @Override
+            public void onSuccess(String accessToken) {
+                Log.d(TAG, "Token exchanged successfully: " + accessToken);
+                PatreonOAuthHelper.checkPatronStatus(requireContext(), userId, new PatreonOAuthHelper.PatronStatusCallback() {
                     @Override
-                    public void onSuccess(double newAmount, int fundingPercentage) {
-                        requireActivity().runOnUiThread(() -> {
-                            Toast.makeText(getContext(), "Thank you for your donation!", Toast.LENGTH_LONG).show();
-                            fundingAmountTv.setText(String.format("$%.2f", newAmount));
-                            fundingProgress.setProgress(fundingPercentage);
-                        });
+                    public void onSuccess(boolean isPatron, double pledgeAmount) {
+                        if (isPatron) {
+                            updateFundingInFirestore(pledgeAmount);
+                            Toast.makeText(getContext(), "Thank you for your donation!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(getContext(), "You are not a patron yet.", Toast.LENGTH_SHORT).show();
+                        }
                     }
 
                     @Override
                     public void onFailure(String errorMessage) {
-                        requireActivity().runOnUiThread(() ->
-                                Toast.makeText(getContext(), "Failed to update funding: " + errorMessage, Toast.LENGTH_LONG).show()
-                        );
+                        Log.e(TAG, "Failed to check patron status: " + errorMessage);
+                        Toast.makeText(getContext(), "Error verifying donation: " + errorMessage, Toast.LENGTH_SHORT).show();
                     }
                 });
             }
-        } else {
-            Toast.makeText(getContext(), "Donation failed, please try again.", Toast.LENGTH_SHORT).show();
-        }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                Log.e(TAG, "Token exchange failed: " + errorMessage);
+                Toast.makeText(getContext(), "Donation failed: " + errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void updateFundingInFirestore(double amount) {
+        double newAmount = currentAmount + amount;
+        int newPercentage = (int) ((newAmount / targetAmount) * 100);
+        db.collection("dogs").document(dogId)
+                .update("fundingAmount", newAmount, "fundingPercentage", newPercentage)
+                .addOnSuccessListener(aVoid -> {
+                    fundingAmountTv.setText(String.format("$%.2f", newAmount));
+                    fundingProgress.setProgress(newPercentage);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Failed to update funding", e);
+                    Toast.makeText(getContext(), "Failed to update funding", Toast.LENGTH_SHORT).show();
+                });
     }
 
     private boolean handleNavigation(@NonNull MenuItem item) {
@@ -241,6 +281,8 @@ public class DogProfile extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (dogListener != null) dogListener.remove();
+        if (dogListener != null) {
+            dogListener.remove();
+        }
     }
 }

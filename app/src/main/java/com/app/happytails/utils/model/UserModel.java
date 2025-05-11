@@ -22,6 +22,7 @@ public class UserModel {
     private String status;
 
     private String fcmToken;
+    private String patreonCode;
 
     public UserModel() {
     }
@@ -38,6 +39,15 @@ public class UserModel {
         this.userImage = userImage;
         this.status = status;
         this.followings = followings;
+        this.patreonCode = "";
+    }
+
+    public String getPatreonCode() {
+        return patreonCode;
+    }
+
+    public void setPatreonCode(String patreonCode) {
+        this.patreonCode = patreonCode;
     }
 
     public List<String> getFollowings() {

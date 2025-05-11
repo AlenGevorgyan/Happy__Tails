@@ -1,33 +1,86 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Redirecting...</title>
-    <script>
-        // Function to parse query parameters from the URL
-        function getQueryParam(param) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param);
+    <meta charset="UTF-8" />
+    <title>Authorization Completed</title>
+    <!-- Include Firebase v9 compat libraries -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 2em;
         }
-
-        // Extract the 'code' parameter
-        const code = getQueryParam('code');
-
-        // Function to handle redirection to the app
-        function redirectToApp() {
-            if (code) {
-                // Redirect to your app using the deep link
-                alert(code)
-                window.location.href = `https://rational-photon-380817.web.app/redirect_patreon?code=${code}`;
-            } else {
-                alert('Authorization code is missing. Please try again.');
-            }
-        }
-    </script>
+    </style>
 </head>
 <body>
-<h1>Authorization Completed</h1>
-<p>Click the button below to return to the app.</p>
-<!-- Add a button to redirect to the app -->
-<button onclick="redirectToApp()">Return to App</button>
+<h1>Authorization Processed</h1>
+<p id="message">Saving your authorization code...</p>
+
+<script>
+    // Replace with your actual Firebase configuration details.
+    var firebaseConfig = {
+      apiKey: "AIzaSyAywxgoN16dKD0vEbhofQ9oUzCV8vtyGO4",
+      authDomain: "rational-photon-380817.web.app",
+      projectId: "rational-photon-380817"
+      // Optionally: storageBucket, messagingSenderId, appId.
+    };
+
+    // Initialize Firebase.
+    firebase.initializeApp(firebaseConfig);
+    var firestore = firebase.firestore();
+    var auth = firebase.auth();
+
+    // Instead of relying solely on onAuthStateChanged,
+    // use getRedirectResult() to capture the authentication result from a redirect.
+    firebase.auth().getRedirectResult()
+      .then(function(result) {
+        // Try to obtain the user from the redirect result.
+        var user = result.user;
+        if (!user) {
+          // If getRedirectResult() doesn't return a user, use onAuthStateChanged as fallback.
+          auth.onAuthStateChanged(function(user) {
+            processUser(user);
+          });
+        } else {
+          processUser(user);
+        }
+      })
+      .catch(function(error) {
+        console.error("Error getting redirect result:", error);
+        document.getElementById("message").textContent = "Error: " + error.message;
+      });
+
+    function processUser(user) {
+      if (user) {
+        // Parse the OAuth code from URL query parameters.
+        var urlParams = new URLSearchParams(window.location.search);
+        var code = urlParams.get("code");
+
+        if (code) {
+          // Update the user's document in the "users" collection with the patreonCode.
+          firestore.collection("users").doc(user.uid).update({
+            patreonCode: code
+          })
+          .then(function() {
+            document.getElementById("message").textContent =
+              "Connection is successful. You can now return to the app.";
+          })
+          .catch(function(error) {
+            console.error("Error updating user:", error);
+            document.getElementById("message").textContent =
+              "Error saving the authorization code. Please try again.";
+          });
+        } else {
+          document.getElementById("message").textContent =
+            "No authorization code found in the URL.";
+        }
+      } else {
+        document.getElementById("message").textContent =
+          "No user is authenticated. Please sign in and try again.";
+      }
+    }
+</script>
 </body>
 </html>

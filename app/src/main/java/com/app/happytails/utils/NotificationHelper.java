@@ -161,25 +161,21 @@ public class NotificationHelper {
                 if (documentSnapshot.exists()) {
                     String receiverToken = documentSnapshot.getString("fcmToken");
                     if (receiverToken != null && !receiverToken.isEmpty()) {
-                        // Create chat-specific data for deep linking
-                        Map<String, String> chatData = createChatData(senderName, message);
-                        
-                        // Add chatroom ID for navigation if needed
-                        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                        String chatroomId = getChatroomId(currentUserId, receiverUserId);
-                        chatData.put("chatRoomId", chatroomId);
+                        // Create basic notification data
+                        Map<String, String> data = new HashMap<>();
+                        data.put("message", message);
+                        data.put("messageType", "chat");
                         
                         Log.d(TAG, "Sending notification to: " + receiverUserId + 
-                              " with sender: " + chatData.get("senderName") + 
-                              " for chatroom: " + chatroomId);
+                              " with sender: " + senderName);
                         
-                        // Send the notification with all required data
+                        // Send the notification with basic data
                         sendCloudMessage(
                             receiverToken,
                             "New message from " + senderName,
                             message,
                             FirebaseMessagingService.CHANNEL_ID_CHAT,
-                            chatData
+                            data
                         );
                     } else {
                         Log.d(TAG, "Receiver FCM token not found for user: " + receiverUserId);
@@ -189,28 +185,6 @@ public class NotificationHelper {
                 }
             })
             .addOnFailureListener(e -> Log.e(TAG, "Error fetching receiver user data", e));
-    }
-
-    /**
-     * Get a chatroom ID from two user IDs (consistent with FirebaseUtil implementation)
-     */
-    private static String getChatroomId(String userId1, String userId2) {
-        if (userId1.hashCode() < userId2.hashCode()) {
-            return userId1 + "_" + userId2;
-        } else {
-            return userId2 + "_" + userId1;
-        }
-    }
-
-    private static Map<String, String> createChatData(String senderName, String message) {
-        Map<String, String> data = new HashMap<>();
-        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        data.put("senderId", currentUserId);
-        data.put("senderName", senderName);
-        data.put("message", message);
-        data.put("messageType", "chat");
-        data.put("timestamp", String.valueOf(System.currentTimeMillis()));
-        return data;
     }
 
     /**

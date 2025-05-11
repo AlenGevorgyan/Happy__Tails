@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -11,6 +12,8 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.app.happytails.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 public class SplashActivity extends AppCompatActivity {
@@ -18,28 +21,32 @@ public class SplashActivity extends AppCompatActivity {
     private static final String TAG = "SplashActivity";
     private static final int SPLASH_DELAY_MS = 3000; // Delay for splash screen in milliseconds
     private ActivityResultLauncher<String> notificationPermissionLauncher;
+    private FirebaseAuth firebaseAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
+        // Initialize Firebase Auth
+        firebaseAuth = FirebaseAuth.getInstance();
+
         // Register notification permission launcher
         notificationPermissionLauncher = NotificationHelper.createPermissionLauncher(this);
-        
+
         // Initialize notification channels
         FirebaseMessagingService.createNotificationChannels();
-        
+
         // Initialize FCM and refresh token in background
         initializeMessaging();
-        
+
         // Check notification permission
         if (!NotificationHelper.hasNotificationPermission(this)) {
-            // We need to request notification permission early
+            // Request notification permission
             NotificationHelper.requestNotificationPermissionWithLauncher(notificationPermissionLauncher);
         }
 
-        // Handle the intent (for deep linking, OAuth redirect, or notifications)
+        // Handle the intent (for deep linking or OAuth redirect)
         handleIntent(getIntent());
     }
 
@@ -48,14 +55,14 @@ public class SplashActivity extends AppCompatActivity {
      */
     private void initializeMessaging() {
         FirebaseMessaging.getInstance().getToken()
-            .addOnCompleteListener(task -> {
-                if (task.isSuccessful() && task.getResult() != null) {
-                    Log.d(TAG, "FCM Token obtained successfully");
-                    // We don't need to save it here as it's handled by NotificationHelper
-                } else {
-                    Log.e(TAG, "FCM Token fetch failed", task.getException());
-                }
-            });
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        Log.d(TAG, "FCM Token obtained successfully");
+                        // Token handled by NotificationHelper
+                    } else {
+                        Log.e(TAG, "FCM Token fetch failed", task.getException());
+                    }
+                });
     }
 
     @Override
@@ -66,23 +73,15 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     /**
-     * Handles the incoming intent, whether it's a deep link, OAuth redirect, notification, or normal app launch.
+     * Handles the incoming intent, whether it's a deep link, OAuth redirect, or normal app launch.
      *
      * @param intent The incoming intent to process.
      */
     private void handleIntent(Intent intent) {
-        // First, check for notification data
-        if (intent.hasExtra("senderId") || intent.hasExtra("userId") || intent.hasExtra("chatRoomId")) {
-            Log.d(TAG, "Notification intent received");
-            navigateToMainActivityWithNotificationData(intent);
-            return;
-        }
-
         // Check for deep link data
         Uri data = intent.getData();
-        if (data != null) {
-            Log.d(TAG, "Intent Data: " + data.toString());
-
+        if (data != null && "https".equals(data.getScheme())) {
+            Log.d(TAG, "Deep Link Data: " + data.toString());
             if (isOAuthRedirect(data)) {
                 // Handle OAuth redirect
                 String code = data.getQueryParameter("code");
@@ -91,35 +90,49 @@ public class SplashActivity extends AppCompatActivity {
                     navigateToMainActivityWithOAuth(code);
                 } else {
                     Log.e(TAG, "OAuth redirect is missing the 'code' parameter.");
+                    Toast.makeText(this, "Failed to authenticate with Patreon.", Toast.LENGTH_SHORT).show();
                     navigateToMainActivity();
                 }
-                return;
             } else {
                 Log.d(TAG, "Unknown deep link: " + data.toString());
+                navigateToMainActivity();
             }
+            // Clear the intent data to prevent reprocessing
+            intent.setData(null);
+            setIntent(intent);
+            return;
         }
 
-        // Default behavior: Show sign-in screen after a delay
-        showSplashAndNavigateToSignIn();
+        // Default behavior: Check login status and navigate after delay
+        showSplashAndNavigate();
     }
 
     /**
-     * Navigates to MainActivity with notification data.
-     * This ensures notification clicks can navigate appropriately.
-     * 
-     * @param intent The intent containing notification data
+     * Navigates to MainActivity with the OAuth authorization code.
+     *
+     * @param code The OAuth authorization code.
      */
-    private void navigateToMainActivityWithNotificationData(Intent intent) {
+    private void navigateToMainActivityWithOAuth(String code) {
         Intent mainIntent = new Intent(this, MainActivity.class);
-        
-        // Copy all extras from the original intent
-        mainIntent.putExtras(intent);
-        
-        // Add a flag to indicate this is from a notification
-        mainIntent.putExtra("from_notification", true);
-        
-        // Start main activity with the data
+        mainIntent.putExtra("oauth_code", code); // Pass the OAuth code
         startActivity(mainIntent);
+        finish(); // Close SplashActivity
+    }
+
+    /**
+     * Navigates to MainActivity for authenticated users.
+     */
+    private void navigateToMainActivity() {
+        Intent mainIntent = new Intent(this, MainActivity.class);
+        startActivity(mainIntent);
+        finish(); // Close SplashActivity
+    }
+    /**
+     * Navigates to SignInActivity for unauthenticated users.
+     */
+    private void navigateToSignInActivity() {
+        Intent signInIntent = new Intent(this, SignInActivity.class);
+        startActivity(signInIntent);
         finish(); // Close SplashActivity
     }
 
@@ -130,42 +143,25 @@ public class SplashActivity extends AppCompatActivity {
      * @return True if it's an OAuth redirect, false otherwise.
      */
     private boolean isOAuthRedirect(Uri data) {
-        return data != null && 
-               data.getScheme().equals("https") &&
-               data.getHost().equals("rational-photon-380817.web.app") &&
-               data.getPath().equals("/redirect_patreon");
+        return data != null &&
+                "https".equals(data.getScheme()) &&
+                "rational-photon-380817.web.app".equals(data.getHost()) &&
+                "/redirect_patreon".equals(data.getPath());
     }
 
     /**
-     * Navigates to the MainActivity with the OAuth authorization code.
-     *
-     * @param code The OAuth authorization code.
+     * Displays the splash screen for a fixed duration and then navigates based on login status.
      */
-    private void navigateToMainActivityWithOAuth(String code) {
-        Intent mainIntent = new Intent(this, MainActivity.class);
-        mainIntent.putExtra("auth_code", code); // Pass the OAuth code to MainActivity
-        mainIntent.putExtra("navigate_to_oauth", true); // Optional flag for OAuth navigation
-        startActivity(mainIntent);
-        finish(); // Close SplashActivity
-    }
-
-    /**
-     * Navigates to the MainActivity in normal mode (no OAuth code).
-     */
-    private void navigateToMainActivity() {
-        Intent mainIntent = new Intent(this, MainActivity.class);
-        startActivity(mainIntent);
-        finish(); // Close SplashActivity
-    }
-
-    /**
-     * Displays the splash screen for a fixed duration and then navigates to the SignInActivity.
-     */
-    private void showSplashAndNavigateToSignIn() {
-        new Handler().postDelayed(() -> {
-            Log.d(TAG, "Navigating to SignInActivity...");
-            startActivity(new Intent(SplashActivity.this, SignInActivity.class));
-            finish(); // Close SplashActivity
+    private void showSplashAndNavigate() {
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+            if (currentUser != null) {
+                Log.d(TAG, "User is logged in, navigating to MainActivity");
+                navigateToMainActivity();
+            } else {
+                Log.d(TAG, "User is not logged in, navigating to SignInActivity");
+                navigateToSignInActivity();
+            }
         }, SPLASH_DELAY_MS);
     }
 }

@@ -85,6 +85,7 @@ android {
         annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
         implementation("de.hdodenhof:circleimageview:3.1.0")
         implementation("com.cloudinary:cloudinary-android:3.0.2")
+        implementation("com.github.denzcoskun:ImageSlideshow:0.1.2")
 
         // 11) Permissions helper
         implementation("com.karumi:dexter:6.2.3")
@@ -103,4 +104,5 @@ android {
 }
 dependencies {
     implementation(libs.work.runtime)
+    implementation(libs.security.crypto)
 }

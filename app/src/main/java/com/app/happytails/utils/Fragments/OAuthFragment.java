@@ -9,13 +9,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.app.happytails.R;
+import com.app.happytails.utils.FirebaseUtil;
 import com.app.happytails.utils.PatreonOAuthHelper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -26,6 +29,7 @@ public class OAuthFragment extends Fragment {
 
     private Button connectPatreonButton;
     private ProgressBar progressBar;
+    private TextView successTextView;
     private FirebaseFirestore firestore;
     private FirebaseAuth auth;
 
@@ -44,6 +48,19 @@ public class OAuthFragment extends Fragment {
 
         connectPatreonButton = view.findViewById(R.id.connectPatreonButton);
         progressBar = view.findViewById(R.id.progressBarOAuth);
+        successTextView = view.findViewById(R.id.successTextViewOAuth);
+        
+        if (successTextView == null) {
+            // If the TextView doesn't exist in layout, find a parent to add it to
+            ViewGroup parent = (ViewGroup) connectPatreonButton.getParent();
+            successTextView = new TextView(requireContext());
+            successTextView.setId(View.generateViewId());
+            successTextView.setText("Patreon Connected Successfully!");
+            successTextView.setTextSize(18);
+            successTextView.setTextColor(getResources().getColor(R.color.primary_color));
+            successTextView.setVisibility(View.GONE);
+            parent.addView(successTextView);
+        }
 
         // Initialize Firebase
         firestore = FirebaseFirestore.getInstance();
@@ -51,6 +68,27 @@ public class OAuthFragment extends Fragment {
 
         // Handle "Connect to Patreon" button click
         connectPatreonButton.setOnClickListener(v -> startPatreonOAuth());
+        
+        // Check if user already has a Patreon token
+        checkExistingPatreonConnection();
+    }
+    
+    private void checkExistingPatreonConnection() {
+        if (auth.getCurrentUser() != null) {
+            String userId = auth.getCurrentUser().getUid();
+            firestore.collection("users").document(userId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists() && documentSnapshot.contains("patreonAccessToken")) {
+                            String token = documentSnapshot.getString("patreonAccessToken");
+                            if (token != null && !token.isEmpty()) {
+                                // User already has a Patreon connection
+                                connectPatreonButton.setVisibility(View.GONE);
+                                successTextView.setVisibility(View.VISIBLE);
+                            }
+                        }
+                    });
+        }
     }
 
     private void startPatreonOAuth() {
@@ -58,8 +96,6 @@ public class OAuthFragment extends Fragment {
         progressBar.setVisibility(View.VISIBLE);
         connectPatreonButton.setEnabled(false);
 
-        // Start the OAuth flow
-        PatreonOAuthHelper.startPatreonOAuthForOwners(requireContext());
     }
 
     @Override
@@ -73,8 +109,14 @@ public class OAuthFragment extends Fragment {
         if (data != null && data.toString().contains("code")) {
             String code = data.getQueryParameter("code");
             if (code != null) {
-                exchangeOAuthCodeForToken(code);
                 requireActivity().getIntent().setData(null); // Clear the intent data after processing
+                
+                // Check if arguments contain the auth code (from navigateToOAuthFragment)
+                Bundle args = getArguments();
+                if (args != null && args.containsKey("auth_code")) {
+                    // This means we came back from OAuth - prevent back navigation
+                    requireActivity().getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                }
             } else {
                 Log.e(TAG, "Authorization failed: Missing code");
                 Toast.makeText(getContext(), "Failed to connect to Patreon.", Toast.LENGTH_SHORT).show();
@@ -85,41 +127,12 @@ public class OAuthFragment extends Fragment {
         }
     }
 
-    private void exchangeOAuthCodeForToken(String code) {
-        PatreonOAuthHelper.exchangeCodeForToken(requireContext(), code, new PatreonOAuthHelper.OAuthCallback() {
-            @Override
-            public void onSuccess(String accessToken) {
-                Log.d(TAG, "Successfully authenticated with Patreon. Token: " + accessToken);
-
-                // Save the access token to Firestore
-                saveAccessTokenToFirestore(accessToken);
-
-                Toast.makeText(getContext(), "Patreon connected successfully!", Toast.LENGTH_SHORT).show();
-                resetUI();
-            }
-
-            @Override
-            public void onFailure(String errorMessage) {
-                Log.e(TAG, "Failed to authenticate with Patreon: " + errorMessage);
-                Toast.makeText(getContext(), "Failed to connect to Patreon.", Toast.LENGTH_SHORT).show();
-                resetUI();
-            }
-        });
-    }
-
-    private void saveAccessTokenToFirestore(String accessToken) {
-        String userId = auth.getCurrentUser().getUid();
-
-        // Save the token under the user's document in Firestore
-        firestore.collection("users").document(userId)
-                .update("patreonAccessToken", accessToken)
-                .addOnSuccessListener(aVoid -> Log.d(TAG, "Access token saved successfully"))
-                .addOnFailureListener(e -> Log.e(TAG, "Failed to save access token: " + e.getMessage()));
-    }
 
     private void resetUI() {
         // Hide progress bar and enable the button
         progressBar.setVisibility(View.GONE);
         connectPatreonButton.setEnabled(true);
+        connectPatreonButton.setVisibility(View.VISIBLE);
+        successTextView.setVisibility(View.GONE);
     }
 }

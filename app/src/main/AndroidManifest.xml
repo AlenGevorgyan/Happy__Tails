@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:required="false" />
@@ -96,7 +97,7 @@
         <activity android:name=".utils.FollowingsActivity" android:exported="false" />
 
         <!-- MainActivity: your primary in‐app nav host -->
-        <activity android:name=".utils.MainActivity" android:exported="false" />
+        <activity android:name=".utils.MainActivity" android:exported="true"/>
 
     </application>
 </manifest>
