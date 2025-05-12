@@ -86,7 +86,7 @@ public class SearchUserAdapter extends FirestoreRecyclerAdapter<UserSearchModel,
 
         public UserModelViewHolder(@NonNull View itemView) {
             super(itemView);
-            usernameText = itemView.findViewById(R.id.usernameText);
+            usernameText = itemView.findViewById(R.id.usernameSearch);
             profilePic = itemView.findViewById(R.id.profilePic);
         }
     }

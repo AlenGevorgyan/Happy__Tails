@@ -35,8 +35,7 @@ public class UserSettingsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Initialize views
-        toolbar = view.findViewById(R.id.profile_settings_toolbar);
-        backBtn = view.findViewById(R.id.back_profile_settings);
+        backBtn = view.findViewById(R.id.settingsBackBtn);
         editPage = view.findViewById(R.id.edit_page_card);
         logout = view.findViewById(R.id.logout_card);
 

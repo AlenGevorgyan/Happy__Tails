@@ -55,7 +55,7 @@ public class SearchActivity extends AppCompatActivity implements OnFragmentInter
     private void initializeViews() {
         backBtn = findViewById(R.id.back_btn);
         resultsRecyclerView = findViewById(R.id.search_user_recycler_view);
-        searchInput = findViewById(R.id.search_username_input);
+        searchInput = findViewById(R.id.search_user_input);
         resultsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         backBtn.setOnClickListener(v -> onBackPressed());
@@ -96,16 +96,17 @@ public class SearchActivity extends AppCompatActivity implements OnFragmentInter
     }
 
     private void updateButtonStates(boolean userSelected) {
+        // Assuming you are using the colors from the refined palette
         if (userSelected) {
-            userButton.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.primary_color));
+            userButton.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.accent_color)); // Use accent for selected
             userButton.setTextColor(ContextCompat.getColor(this, R.color.white));
-            dogButton.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.white));
-            dogButton.setTextColor(ContextCompat.getColor(this, R.color.primary_color));
+            dogButton.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.white)); // Use white for unselected
+            dogButton.setTextColor(ContextCompat.getColor(this, R.color.text_primary)); // Use text_primary for unselected text
         } else {
-            dogButton.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.primary_color));
+            dogButton.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.accent_color)); // Use accent for selected
             dogButton.setTextColor(ContextCompat.getColor(this, R.color.white));
-            userButton.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.white));
-            userButton.setTextColor(ContextCompat.getColor(this, R.color.primary_color));
+            userButton.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.white)); // Use white for unselected
+            userButton.setTextColor(ContextCompat.getColor(this, R.color.text_primary)); // Use text_primary for unselected text
         }
     }
 

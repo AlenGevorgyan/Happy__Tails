@@ -139,7 +139,7 @@ public class ProfileFragment extends Fragment {
         username = view.findViewById(R.id.nameTV);
         followBtn = view.findViewById(R.id.subscribeBtn);
         settingsBtn = view.findViewById(R.id.settings_profile);
-        back_profile = view.findViewById(R.id.back_profile);
+        back_profile = view.findViewById(R.id.back_btn_profile);
         chatBtn = view.findViewById(R.id.chatBtn);
         followerTv = view.findViewById(R.id.folower_Tv);
         followingTv = view.findViewById(R.id.following_Tv);

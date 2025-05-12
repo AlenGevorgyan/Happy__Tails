@@ -22,6 +22,7 @@ import androidx.fragment.app.Fragment;
 
 import com.app.happytails.R;
 import com.bumptech.glide.Glide;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -73,8 +74,8 @@ public class EditPageFragment extends Fragment {
         statusEt = view.findViewById(R.id.passwordEditText);
         profileImage = view.findViewById(R.id.profileImageEdit);
         saveBtn = view.findViewById(R.id.saveProfileBtn);
+        backButton = view.findViewById(R.id.editBackBtn);
         progressBar = view.findViewById(R.id.progressBar);
-        backButton = view.findViewById(R.id.back_profile_settings);
 
         loadUserData();
 

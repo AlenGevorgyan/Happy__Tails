@@ -4,6 +4,7 @@
     android:layout_height="70dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/edit_text_rounded_corner"
+    android:backgroundTint="@color/secondary_color"
     android:layout_margin="10dp"
     android:elevation="2dp"
     android:orientation="horizontal">
@@ -16,7 +17,7 @@
         android:src="@drawable/user_icon"
         android:padding="4dp"
         app:tint="@color/gray"
-        android:backgroundTint="@color/off_white"
+        android:backgroundTint="@color/light_secondary_color"
         android:layout_centerInParent="true"/>
 
         <TextView
@@ -25,7 +26,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="Username"
-            android:textColor="@color/black"
+            android:textColor="@color/white"
             android:textSize="20sp"
             android:layout_marginStart="20dp"
             android:textStyle="bold" />

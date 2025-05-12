@@ -73,7 +73,7 @@ public class CreateFragment2 extends Fragment {
         recyclerView = view.findViewById(R.id.dogGallery);
         nextButton = view.findViewById(R.id.postNextBtn);
         urgencyLevelValue = view.findViewById(R.id.urgencyLevelValue);
-        urgencyLevelButton = view.findViewById(R.id.urgencyLevelTitle);
+        urgencyLevelButton = view.findViewById(R.id.btn_select_urgency_level);
         progbar = view.findViewById(R.id.create_progress);
         patreonUrl = view.findViewById(R.id.patreon_url);
 

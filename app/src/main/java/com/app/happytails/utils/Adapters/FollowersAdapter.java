@@ -78,7 +78,7 @@ public class FollowersAdapter extends RecyclerView.Adapter<FollowersAdapter.View
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            followerTextView = itemView.findViewById(R.id.usernameText);
+            followerTextView = itemView.findViewById(R.id.usernameSearch);
             profileImage = itemView.findViewById(R.id.profilePic);
         }
     }

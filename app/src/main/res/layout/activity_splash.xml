@@ -1,40 +1,116 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/primary_color"
+    android:background="@color/splash_background"
     tools:context=".utils.SplashActivity">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical">
+    <!-- Logo -->
+    <ImageView
+        android:id="@+id/app_logo"
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:src="@drawable/app_icon"
+        android:elevation="4dp"
+        app:layout_constraintBottom_toTopOf="@+id/app_name"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed"
+        android:contentDescription="Happy Tails logo" />
 
-        <ImageView
-            android:layout_width="220dp"
-            android:layout_height="220dp"
-            android:layout_centerInParent="true"
-            android:src="@drawable/app_icon"/>
-
+    <!-- App Name -->
     <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:fontFamily="monospace"
-            android:text="Happy Tails"
-            android:textColor="@color/secondary_color"
-            android:textSize="40sp"
-            android:textStyle="bold" />
+        android:id="@+id/app_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/montserrat_bold"
+        app:fontFamily="@font/montserrat_bold"
+        android:text="Happy Tails"
+        android:textColor="@color/text_primary"
+        android:textSize="36sp"
+        app:layout_constraintBottom_toTopOf="@+id/app_tagline"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/app_logo" />
 
-        <ProgressBar
-            android:layout_width="32dp"
-            android:layout_height="wrap_content"
-            android:indeterminateTint="@color/secondary_color" />
+    <!-- Tagline -->
+    <TextView
+        android:id="@+id/app_tagline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:fontFamily="@font/montserrat_bold"
+        app:fontFamily="@font/font_family"
+        android:text="Virtual Dog Adoption"
+        android:textColor="@color/text_secondary"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@+id/progress_circular"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/app_name" />
 
-    </LinearLayout>
+    <!-- Left Paw Print -->
+    <ImageView
+        android:id="@+id/paw_print_left"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:src="@drawable/ic_paw"
+        android:alpha="0.7"
+        android:layout_marginEnd="48dp"
+        app:layout_constraintEnd_toStartOf="@id/app_logo"
+        app:layout_constraintTop_toTopOf="@id/app_logo"
+        app:layout_constraintBottom_toBottomOf="@id/app_logo"
+        android:contentDescription="Paw print decoration" />
 
-</RelativeLayout>
+    <!-- Right Paw Print -->
+    <ImageView
+        android:id="@+id/paw_print_right"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:src="@drawable/ic_paw"
+        android:scaleX="-1"
+        android:alpha="0.7"
+        android:layout_marginStart="48dp"
+        app:layout_constraintStart_toEndOf="@id/app_logo"
+        app:layout_constraintTop_toTopOf="@id/app_logo"
+        app:layout_constraintBottom_toBottomOf="@id/app_logo"
+        android:contentDescription="Paw print decoration" />
+
+    <!-- Progress Indicator -->
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/progress_circular"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:indeterminate="true"
+        app:indicatorColor="@color/accent_color"
+        app:indicatorSize="40dp"
+        app:trackThickness="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/app_tagline"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <!-- Optional App Version -->
+    <TextView
+        android:id="@+id/app_version"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:fontFamily="@font/montserrat_light"
+        app:fontFamily="@font/font_family"
+        android:text="Version 1.0"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        android:alpha="0.7"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

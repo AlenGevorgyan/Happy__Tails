@@ -1,196 +1,202 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/secondary_color"
-    android:fitsSystemWindows="true">
+    android:background="@color/primary_color" android:fitsSystemWindows="true">
 
-    <!-- Fixed Toolbar (Outside ScrollView) -->
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/createPostMenu"
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/primary_color"
-        app:contentInsetStart="0dp"
-        app:contentInsetEnd="0dp"
-        android:elevation="4dp">
+        android:layout_height="wrap_content"
+        android:background="@color/dark_secondary_color" app:elevation="4dp">
 
-        <RelativeLayout
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/createPostMenu"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/primary_color"
-            android:padding="10dp">
+            android:layout_height="?attr/actionBarSize"
+            app:titleTextColor="@color/white" app:navigationIcon="@drawable/baseline_arrow_back_24"
+            app:navigationIconTint="@color/white" tools:title="Create Dog Account" />
 
-            <TextView
-                android:id="@+id/createPostTv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Create Dog Account"
-                android:textSize="22sp"
-                android:textColor="@color/white"
-                android:textStyle="bold"
-                android:layout_marginStart="10dp"
-                android:layout_centerVertical="true" />
-        </RelativeLayout>
-    </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Scrollable Content -->
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/createPostMenu"
-        android:fillViewport="true">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="20dp"
-            android:gravity="center">
+            android:padding="24dp">
 
-            <!-- Profile Image -->
             <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/mainProfileImage"
                 android:layout_width="120dp"
                 android:layout_height="120dp"
-                android:layout_marginVertical="10dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="24dp"
+                android:scaleType="centerCrop"
                 android:src="@drawable/baseline_add_24"
-                app:civ_border_color="@color/secondary_color"
-                app:civ_border_width="1dp" />
+                app:tint="@color/text_secondary" app:civ_border_color="@color/accent_color" app:civ_border_width="2dp"
+                 />
 
             <com.google.android.material.divider.MaterialDivider
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:layout_marginVertical="10dp" />
+                android:layout_marginVertical="24dp"
+                app:dividerColor="@color/light_gray" /> <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/input_dog_name"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="dog name"
+            app:boxBackgroundColor="@color/white" app:errorEnabled="true"
+            app:hintTextColor="@color/text_secondary"
+            app:boxStrokeColor="@color/text_secondary"> <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/dog_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapWords"
+            android:maxLines="1"
+            android:textColor="@color/text_primary" /> </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Dog Name -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/input_dog_name"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Dog Name"
-                app:boxBackgroundColor="@color/white"
-                app:errorEnabled="true">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/dog_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:inputType="textCapWords"
-                    android:maxLines="1" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Patreon Url -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/input_patreon_url"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Patreon Url"
-                app:boxBackgroundColor="@color/white"
-                app:errorEnabled="true">
+                android:layout_marginTop="16dp"
+                android:hint="Patreon url"
+                app:boxBackgroundColor="@color/white" app:errorEnabled="true"
+                app:hintTextColor="@color/text_secondary"
+                app:boxStrokeColor="@color/text_secondary"> <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/patreon_url"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textUri"
+                android:maxLines="1"
+                android:textColor="@color/text_primary" /> </com.google.android.material.textfield.TextInputLayout>
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/patreon_url"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:inputType="textCapWords"
-                    android:maxLines="1" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Dog Description -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/input_dog_description"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
-                android:layout_height="156dp"
-                android:hint="Dog Description"
-                app:boxBackgroundColor="@color/white"
-                app:errorEnabled="true">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/dog_description"
-                    android:layout_width="match_parent"
-                    android:layout_height="120dp"
-                    android:gravity="top"
-                    android:inputType="textMultiLine"
-                    android:scrollbars="vertical" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Urgency Level -->
-            <Button
-                android:id="@+id/urgencyLevelTitle"
-                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Select urgency Level"
-                android:textColor="@color/secondary_color"
-                android:textSize="16sp"
-                android:gravity="center" />
+                android:hint="description"
+                app:boxBackgroundColor="@color/white" app:errorEnabled="true"
+                app:hintTextColor="@color/text_secondary"
+                app:boxStrokeColor="@color/text_secondary"> <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/dog_description"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:gravity="top|start"
+                android:inputType="textMultiLine|textCapSentences"
+                android:scrollbars="vertical"
+                android:textColor="@color/text_primary" /> </com.google.android.material.textfield.TextInputLayout>
 
-            <TextView
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="24dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Urgency Level"
+                    android:textColor="@color/text_primary" android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_select_urgency_level"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Select Urgency level"
+                    android:textColor="@color/dark_secondary_color"
+                    app:iconTint="@color/dark_secondary_color" app:iconGravity="end"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    app:strokeColor="@color/dark_secondary_color" /> <TextView
                 android:id="@+id/urgencyLevelValue"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="Urgency Level: No selected"
-                android:textColor="@color/primary_color"
-                android:textSize="16sp"
-                android:gravity="center" />
+                android:layout_marginTop="8dp"
+                android:text="No selected"
+                android:textColor="@color/text_secondary" android:textSize="16sp" />
+            </LinearLayout>
 
-            <!-- Gallery Section -->
-            <TextView
-                android:id="@+id/galleryTitle"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Dog Gallery"
-                android:textColor="@color/primary_color"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:gravity="center" />
+                android:orientation="vertical"
+                android:layout_marginTop="24dp">
 
-            <!-- Image Upload Preview -->
-            <ImageView
-                android:id="@+id/dogPic"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_marginTop="10dp"
-                android:contentDescription="Dog image preview"
-                android:src="@drawable/baseline_add_24" />
+                <TextView
+                    android:id="@+id/galleryTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Dog Gallery"
+                    android:textColor="@color/text_primary" android:textSize="18sp"
+                    android:textStyle="bold" />
 
-            <!-- Gallery RecyclerView -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/dogGallery"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_add_image"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="16dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@color/white"> <ImageView
+                    android:id="@+id/dogPic"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/baseline_add_24"
+                    android:padding="24dp"
+                    app:tint="@color/gray"/>
+                </com.google.android.material.card.MaterialCardView>
 
-            <!-- Action Button -->
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/dogGallery"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:clipToPadding="false"
+                    android:paddingHorizontal="4dp"
+                    tools:itemCount="3"
+                    tools:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:orientation="horizontal"
+                    tools:listitem="@layout/item_gallery_image" />
+            </LinearLayout>
+
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/postNextBtn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:layout_marginHorizontal="20dp"
-                android:text="Next"
-                android:textColor="@color/white"
-                android:textSize="18sp"
+                android:layout_marginTop="32dp"
+                android:text="Create" android:textColor="@color/white" android:textSize="16sp"
                 android:textStyle="bold"
+                android:paddingVertical="12dp"
                 app:cornerRadius="8dp"
-                app:iconPadding="8dp"
-                android:backgroundTint="@color/primary_color" />
+                app:backgroundTint="@color/accent_color" style="@style/Widget.MaterialComponents.Button" />
 
             <ProgressBar
                 android:id="@+id/create_progress"
-                android:layout_width="wrap_content"
+                android:layout_width="36dp"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/primary_color"
-                android:visibility="gone"/>
+                android:layout_gravity="center_horizontal"
+                android:indeterminateTint="@color/accent_color" android:layout_marginTop="16dp"
+                android:visibility="gone"
+                tools:visibility="visible"/>
 
         </LinearLayout>
-    </ScrollView>
-</RelativeLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

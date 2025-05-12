@@ -79,7 +79,7 @@ public class ChatActivity extends AppCompatActivity {
 
         otherProfilePic = findViewById(R.id.profile_pic_inchat);
         otherUsername = findViewById(R.id.other_username);
-        backBtn = findViewById(R.id.back_btn);
+        backBtn = findViewById(R.id.back_btn_chat);
 
         backBtn.setOnClickListener(view -> finish());
 

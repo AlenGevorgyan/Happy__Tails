@@ -86,7 +86,7 @@ public class SearchDogAdapter extends FirestoreRecyclerAdapter<DogSearchModel, S
 
         public DogModelViewHolder(@NonNull View itemView) {
             super(itemView);
-            dogNameText = itemView.findViewById(R.id.usernameText);
+            dogNameText = itemView.findViewById(R.id.usernameSearch);
             profilePic = itemView.findViewById(R.id.profilePic);
         }
     }
