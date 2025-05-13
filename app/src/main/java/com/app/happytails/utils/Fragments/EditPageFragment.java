@@ -4,8 +4,8 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,14 +22,19 @@ import androidx.fragment.app.Fragment;
 
 import com.app.happytails.R;
 import com.bumptech.glide.Glide;
-import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.appbar.MaterialToolbar; // Keep if toolbar is used in layout
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+// Import Firebase Storage classes
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
-import com.cloudinary.Cloudinary;
-import com.cloudinary.utils.ObjectUtils;
+// Removed Cloudinary imports
+// import com.cloudinary.Cloudinary;
+// import com.cloudinary.utils.ObjectUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,13 +49,16 @@ public class EditPageFragment extends Fragment {
     private CircleImageView profileImage;
     private Button saveBtn;
     private ProgressBar progressBar;
-    private ImageButton backButton;
+    private ImageButton backButton; // Keep if back button is ImageButton
 
     private FirebaseUser currentUser;
     private FirebaseFirestore db;
+    private StorageReference storageReference; // Firebase Storage Reference
 
     private Uri imageUri;
     private static final int PICK_IMAGE_REQUEST = 1;
+
+    private static final String TAG = "EditPageFragment"; // Added TAG for logging
 
     public EditPageFragment() {
         // Required empty public constructor
@@ -68,14 +76,19 @@ public class EditPageFragment extends Fragment {
         // Initialize Firebase
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
         db = FirebaseFirestore.getInstance();
+        // Initialize Firebase Storage Reference
+        storageReference = FirebaseStorage.getInstance().getReference("profile_images"); // Create a reference to 'profile_images' folder
 
         // Initialize views
-        usernameEt = view.findViewById(R.id.emailEditText);
-        statusEt = view.findViewById(R.id.passwordEditText);
+        usernameEt = view.findViewById(R.id.emailEditText); // Assuming this is for username now
+        statusEt = view.findViewById(R.id.passwordEditText); // Assuming this is for status now
         profileImage = view.findViewById(R.id.profileImageEdit);
         saveBtn = view.findViewById(R.id.saveProfileBtn);
-        backButton = view.findViewById(R.id.editBackBtn);
+        backButton = view.findViewById(R.id.editBackBtn); // Assuming back button ID
         progressBar = view.findViewById(R.id.progressBar);
+
+        // Setup toolbar back navigation if your layout uses MaterialToolbar with navigation icon
+        setupToolbar(view);
 
         loadUserData();
 
@@ -83,33 +96,71 @@ public class EditPageFragment extends Fragment {
 
         saveBtn.setOnClickListener(v -> updateProfile());
 
-        backButton.setOnClickListener(v -> requireActivity().onBackPressed());
+        // If not using toolbar navigation, use this back button listener
+        if (backButton != null) {
+            backButton.setOnClickListener(v -> requireActivity().onBackPressed());
+        }
     }
 
+    // Setup toolbar back navigation if your layout uses MaterialToolbar with navigation icon
+    private void setupToolbar(View view) {
+        MaterialToolbar toolbar = view.findViewById(R.id.edit_page_toolbar); // Assuming toolbar ID
+        if (toolbar != null) {
+            toolbar.setNavigationOnClickListener(v -> {
+                // Handle back button click - typically pop the fragment from the back stack
+                requireActivity().onBackPressed(); // Use requireActivity()
+            });
+            // Optional: Set toolbar title
+            // toolbar.setTitle("Edit Profile");
+        }
+    }
+
+
     private void loadUserData() {
-        if (currentUser == null) return;
+        if (currentUser == null) {
+            Log.e(TAG, "No current user signed in.");
+            // Optionally navigate back or show an error
+            Toast.makeText(getContext(), "User not signed in.", Toast.LENGTH_SHORT).show();
+            // requireActivity().onBackPressed(); // Example: go back if no user
+            return;
+        }
 
         DocumentReference userRef = db.collection("users").document(currentUser.getUid());
         userRef.get().addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
                 String username = documentSnapshot.getString("username");
                 String status = documentSnapshot.getString("status");
-                String profileURL = documentSnapshot.getString("userImage");
+                String profileURL = documentSnapshot.getString("userImage"); // Field name in Firestore
 
-                usernameEt.setText(username);
-                statusEt.setText(status);
+                if (username != null) usernameEt.setText(username);
+                if (status != null) statusEt.setText(status);
 
                 if (profileURL != null && !profileURL.isEmpty()) {
-                    Glide.with(requireContext()).load(profileURL).into(profileImage);
+                    // Use requireContext() for Glide
+                    Glide.with(requireContext())
+                            .load(profileURL)
+                            .placeholder(R.drawable.user_icon) // Optional: Placeholder
+                            .error(R.drawable.user_icon) // Optional: Error image
+                            .into(profileImage);
+                } else {
+                    // Set a default image if no profile URL is available
+                    profileImage.setImageResource(R.drawable.user_icon);
                 }
+            } else {
+                Log.d(TAG, "User document does not exist.");
+                // Optionally set default values or show a message
             }
-        }).addOnFailureListener(e -> Toast.makeText(getContext(), "Failed to load data", Toast.LENGTH_SHORT).show());
+        }).addOnFailureListener(e -> {
+            Log.e(TAG, "Failed to load user data", e);
+            Toast.makeText(getContext(), "Failed to load data", Toast.LENGTH_SHORT).show();
+        });
     }
 
     private void openImagePicker() {
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
+        // Use startActivityForResult from the fragment
         startActivityForResult(intent, PICK_IMAGE_REQUEST);
     }
 
@@ -118,15 +169,11 @@ public class EditPageFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
             imageUri = data.getData();
-            profileImage.setImageURI(imageUri);
+            profileImage.setImageURI(imageUri); // Display the selected image
         }
     }
 
-    private String getFileExtension(Uri uri) {
-        ContentResolver contentResolver = requireActivity().getContentResolver();
-        MimeTypeMap mime = MimeTypeMap.getSingleton();
-        return mime.getExtensionFromMimeType(contentResolver.getType(uri));
-    }
+    // Removed getFileExtension as it's not strictly needed for Firebase Storage upload
 
     private void updateProfile() {
         String newUsername = usernameEt.getText().toString().trim();
@@ -140,64 +187,87 @@ public class EditPageFragment extends Fragment {
         progressBar.setVisibility(View.VISIBLE);
 
         if (imageUri != null) {
-            new AsyncTask<Uri, Void, String[]>() {
-                @Override
-                protected String[] doInBackground(Uri... uris) {
-                    try {
-                        Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap(
-                                "cloud_name", "dzwoyslx4",
-                                "api_key", "936129888839456",
-                                "api_secret", "K4vL432ZheS8N6uJARlvzUh1Yww"
-                        ));
-
-                        InputStream inputStream = requireActivity().getContentResolver().openInputStream(uris[0]);
-                        Map uploadResult = cloudinary.uploader().upload(inputStream, ObjectUtils.asMap("folder", "profile_images", "public_id", "profile_" + currentUser.getUid()));
-
-                        String imageUrl = (String) uploadResult.get("secure_url");
-                        String publicId = (String) uploadResult.get("public_id");
-
-                        return new String[]{publicId, imageUrl};
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        return null;
-                    }
-                }
-
-                @Override
-                protected void onPostExecute(String[] result) {
-                    super.onPostExecute(result);
-                    if (result != null) {
-                        String publicId = result[0];
-                        String imageUrl = result[1];
-                        saveProfileToDatabase(newUsername, newStatus, publicId, imageUrl);
-                    } else {
-                        Toast.makeText(getContext(), "Failed to upload image", Toast.LENGTH_SHORT).show();
-                        progressBar.setVisibility(View.GONE);
-                    }
-                }
-            }.execute(imageUri);
-
+            // Upload image to Firebase Storage
+            uploadImageToFirebaseStorage(newUsername, newStatus);
         } else {
-            saveProfileToDatabase(newUsername, newStatus, null, null);
+            // No new image selected, just save profile data
+            saveProfileToDatabase(newUsername, newStatus, null); // Pass null for image URL
         }
     }
 
-    private void saveProfileToDatabase(String username, String status, String publicId, String imageUrl) {
+    private void uploadImageToFirebaseStorage(String username, String status) {
+        if (currentUser == null) {
+            Log.e(TAG, "Cannot upload image, user not signed in.");
+            Toast.makeText(getContext(), "Error: User not signed in.", Toast.LENGTH_SHORT).show();
+            progressBar.setVisibility(View.GONE);
+            return;
+        }
+
+        // Create a unique file name for the image (e.g., using user ID and timestamp)
+        StorageReference fileReference = storageReference.child(currentUser.getUid() + "_" + System.currentTimeMillis() + ".jpg"); // Using .jpg extension
+
+        // Start the upload task
+        fileReference.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot -> {
+                    // Get the download URL after successful upload
+                    fileReference.getDownloadUrl().addOnSuccessListener(uri -> {
+                        String downloadUrl = uri.toString();
+                        Log.d(TAG, "Image uploaded successfully. Download URL: " + downloadUrl);
+                        // Save profile data with the new image URL
+                        saveProfileToDatabase(username, status, downloadUrl);
+                    }).addOnFailureListener(e -> {
+                        Log.e(TAG, "Failed to get download URL", e);
+                        Toast.makeText(getContext(), "Failed to get image URL", Toast.LENGTH_SHORT).show();
+                        progressBar.setVisibility(View.GONE);
+                    });
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Image upload failed", e);
+                    Toast.makeText(getContext(), "Image upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
+                })
+                .addOnProgressListener(taskSnapshot -> {
+                    // Optional: Show upload progress
+                    double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                    Log.d(TAG, "Upload is " + progress + "% done");
+                    // Update a progress bar if you have one
+                });
+    }
+
+
+    // Modified saveProfileToDatabase to accept image URL
+    private void saveProfileToDatabase(String username, String status, @Nullable String imageUrl) {
+        if (currentUser == null) {
+            Log.e(TAG, "Cannot save profile, user not signed in.");
+            Toast.makeText(getContext(), "Error: User not signed in.", Toast.LENGTH_SHORT).show();
+            progressBar.setVisibility(View.GONE);
+            return;
+        }
+
         DocumentReference userRef = db.collection("users").document(currentUser.getUid());
 
         Map<String, Object> updates = new HashMap<>();
         updates.put("username", username);
         updates.put("status", status);
-        if (imageUrl != null) updates.put("userImage", imageUrl);
-        if (publicId != null) updates.put("public_id", publicId);
+        // Only update userImage field if a new image URL is provided
+        if (imageUrl != null) {
+            updates.put("userImage", imageUrl); // Save the Firebase Storage download URL
+            // You might also want to save the storage path or public ID if needed for deletion later
+            // updates.put("userImagePath", fileReference.getPath()); // Example
+        }
+
 
         userRef.update(updates).addOnSuccessListener(aVoid -> {
+            Log.d(TAG, "Profile updated successfully");
             Toast.makeText(getContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show();
             progressBar.setVisibility(View.GONE);
+            // Optionally navigate back after successful save
+            // requireActivity().onBackPressed();
         }).addOnFailureListener(e -> {
+            Log.e(TAG, "Failed to update profile", e);
             Toast.makeText(getContext(), "Failed to update profile", Toast.LENGTH_SHORT).show();
             progressBar.setVisibility(View.GONE);
         });
     }
+
 }
