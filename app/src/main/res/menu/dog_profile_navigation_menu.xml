@@ -5,6 +5,11 @@
         android:title="" />
 
     <item
+        android:id="@+id/vetMenu"
+        android:icon="@drawable/vet_icon"
+        android:title=""/>
+
+    <item
         android:id="@+id/supportersMenu"
         android:icon="@drawable/user_icon"
         android:title="" />

@@ -9,6 +9,14 @@ public class HomeModel {
     private String dogName;
     public List<String> dog_keywords;
     public String dog_lower;
+
+    private String vetName;
+    private String clinicName;
+    private String clinicAddress;
+    private String vetPhone;
+    private String vetEmail;
+    private String medicalHistory;
+    private String description;
     private int fundingPercentage;
     private ArrayList<String> galleryImages;
     private String mainImage;
@@ -55,6 +63,62 @@ public class HomeModel {
 
     // Getters and setters
 
+
+    public String getVetName() {
+        return vetName;
+    }
+
+    public void setVetName(String vetName) {
+        this.vetName = vetName;
+    }
+
+    public String getClinicName() {
+        return clinicName;
+    }
+
+    public void setClinicName(String clinicName) {
+        this.clinicName = clinicName;
+    }
+
+    public String getClinicAddress() {
+        return clinicAddress;
+    }
+
+    public void setClinicAddress(String clinicAddress) {
+        this.clinicAddress = clinicAddress;
+    }
+
+    public String getVetPhone() {
+        return vetPhone;
+    }
+
+    public void setVetPhone(String vetPhone) {
+        this.vetPhone = vetPhone;
+    }
+
+    public String getVetEmail() {
+        return vetEmail;
+    }
+
+    public void setVetEmail(String vetEmail) {
+        this.vetEmail = vetEmail;
+    }
+
+    public String getMedicalHistory() {
+        return medicalHistory;
+    }
+
+    public void setMedicalHistory(String medicalHistory) {
+        this.medicalHistory = medicalHistory;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     public String getAccessToken() {
         return accessToken;

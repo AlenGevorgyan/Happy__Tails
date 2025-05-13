@@ -58,7 +58,6 @@ public class GalleryFragment extends Fragment {
             }
         } else {
             Log.d(TAG, "Error loading gallery");
-            Toast.makeText(getContext(), "Error loading gallery", Toast.LENGTH_SHORT).show();
         }
     }
 }

@@ -5,47 +5,40 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/off_white" android:fitsSystemWindows="true">
+    android:background="@color/off_white"
+    android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/dark_secondary_color" app:elevation="4dp">
+        android:background="@color/dark_secondary_color"
+        app:elevation="4dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/dog_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize">
+            android:layout_height="?attr/actionBarSize"
+            app:contentInsetStartWithNavigation="0dp"
+            app:titleTextColor="@color/white"
+            app:navigationIcon="@drawable/baseline_arrow_back_24"
+            app:navigationIconTint="@color/white"
+            tools:title="Dog Profile">
 
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Dog Profile"
-                    android:textColor="@color/white"
-                    android:textSize="30dp"
-                    android:textStyle="bold"
-                    android:layout_toRightOf="@id/dogBackBtn"
-                    android:layout_centerVertical="true"/>
-
-                <ImageButton
-                    android:id="@+id/dogBackBtn"
-                    android:layout_alignParentLeft="true"
-                    android:layout_width="?attr/actionBarSize" android:layout_height="?attr/actionBarSize"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:padding="14dp" android:src="@drawable/baseline_arrow_back_24"
-                    app:tint="@color/white" />
-
-            </RelativeLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dog Profile"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="16dp" />
 
         </com.google.android.material.appbar.MaterialToolbar>
-              </com.google.android.material.appbar.AppBarLayout>
-
+    </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/dog_profile_scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
@@ -54,42 +47,69 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:paddingBottom="16dp"> <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:padding="16dp"> <LinearLayout
             android:id="@+id/DogInfo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:paddingVertical="8dp"> <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/dogProfileImage"
-            android:layout_width="100dp" android:layout_height="100dp" android:layout_marginEnd="16dp" android:src="@drawable/user_icon"
-            app:civ_border_color="@color/accent_color" app:civ_border_width="2dp" />
+            android:paddingVertical="8dp">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/dogProfileImage"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_marginEnd="16dp"
+                android:src="@drawable/user_icon"
+                app:civ_border_color="@color/accent_color"
+                app:civ_border_width="2dp"
+                android:contentDescription="Dog profile image" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_gravity="center_vertical"> <TextView
-                android:id="@+id/dogNameTV"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Dog Name"
-                android:textColor="@color/text_primary" android:textSize="24sp" android:textStyle="bold"
-                android:layout_marginBottom="4dp" /> <TextView
-                android:id="@+id/descriptionTV"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:maxLines="3" android:ellipsize="end" android:text="Description"
-                android:textSize="14sp" android:textColor="@color/text_secondary" android:textStyle="normal" /> </LinearLayout>
+                android:layout_gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/dogNameTV"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Dog Name"
+                    android:textColor="@color/text_primary"
+                    android:textSize="24sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:id="@+id/descriptionTV"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:maxLines="3"
+                    android:ellipsize="end"
+                    android:text="Description"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_secondary"
+                    android:textStyle="normal" />
+            </LinearLayout>
         </LinearLayout>
 
             <com.google.android.material.divider.MaterialDivider
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:layout_marginVertical="16dp" app:dividerColor="@color/light_gray" /> <TextView
+                android:layout_marginVertical="16dp"
+                app:dividerColor="@color/light_gray" />
+
+            <TextView
                 android:id="@+id/urgencyLevelLabel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="urgency Level" android:textColor="@color/text_primary" android:textStyle="bold"
+                android:text="Urgency Level"
+                android:textColor="@color/text_primary"
+                android:textStyle="bold"
                 android:textSize="16sp" />
 
             <TextView
@@ -98,17 +118,23 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="5"
-                android:textColor="@color/accent_color" android:textSize="20sp"
+                android:textColor="@color/accent_color"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
             <com.google.android.material.divider.MaterialDivider
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:layout_marginVertical="16dp" app:dividerColor="@color/light_gray" /> <TextView
+                android:layout_marginVertical="16dp"
+                app:dividerColor="@color/light_gray" />
+
+            <TextView
                 android:id="@+id/monthlyTv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Monthly Funding" android:textColor="@color/text_primary" android:textStyle="bold"
+                android:text="Monthly Funding"
+                android:textColor="@color/text_primary"
+                android:textStyle="bold"
                 android:textSize="16sp" />
 
             <ProgressBar
@@ -120,68 +146,76 @@
                 android:max="100"
                 android:progress="75"
                 android:progressDrawable="@drawable/progress_bar_custom"
-                android:progressTint="@color/accent_color" /> <LinearLayout
+                android:progressTint="@color/accent_color" />
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_marginTop="4dp">
+
                 <TextView
                     android:id="@+id/fundingAmountTV"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="$0.00"
-                    android:textColor="@color/text_secondary" android:textSize="14sp" />
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/targetAmountTV"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="$0.00"
-                    android:textColor="@color/text_secondary" android:textSize="14sp" />
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp" />
             </LinearLayout>
-
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/donateButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="24dp" android:text="Donate" android:textColor="@color/white"
+                android:layout_marginTop="24dp"
+                android:text="Donate"
+                android:textColor="@color/white"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:paddingHorizontal="32dp"
-                app:cornerRadius="24dp" app:backgroundTint="@color/accent_color" style="@style/Widget.MaterialComponents.Button" />
+                app:cornerRadius="24dp"
+                app:backgroundTint="@color/accent_color"
+                style="@style/Widget.MaterialComponents.Button" />
 
-<!--            <ImageButton-->
-<!--                android:id="@+id/settingsBtn"-->
-<!--                android:layout_width="48dp"-->
-<!--                android:layout_height="48dp"-->
-<!--                android:layout_gravity="end"-->
-<!--                android:layout_marginTop="8dp"-->
-<!--                android:layout_marginEnd="8dp"-->
-<!--                android:src="@drawable/settings_icon"-->
-<!--                android:background="?attr/selectableItemBackgroundBorderless"-->
-<!--                android:visibility="gone"-->
-<!--                app:tint="@color/text_secondary"-->
-<!--                tools:visibility="visible" />-->
-
-
+        </LinearLayout>
             <com.google.android.material.divider.MaterialDivider
-                android:id="@+id/dogProfileDivider"
+            android:id="@+id/dogProfileDivider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginBottom="0dp"
+            app:dividerColor="@color/light_gray" />
+            <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/dogBottomNavigation"
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginTop="24dp" app:dividerColor="@color/light_gray" /> </LinearLayout>
+                android:layout_height="50dp"
+                android:layout_gravity="bottom"
+                app:backgroundTint="@color/dark_secondary_color"
+                app:itemIconTint="@drawable/bottom_navigation_selector"
+                app:itemTextColor="@color/bottom_navigation_text_color_selector"
+                app:itemActiveIndicatorStyle="@null"
+                app:menu="@menu/dog_profile_navigation_menu" />
+
+            <FrameLayout
+                android:id="@+id/dog_fragment_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0dp"
+                android:minHeight="300dp"
+                android:layout_gravity="bottom"
+                tools:layout_height="300dp"/>
+        </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/dogBottomNavigation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" android:layout_gravity="bottom" app:backgroundTint="@color/dark_secondary_color" app:itemIconTint="@drawable/bottom_navigation_selector" app:itemTextColor="@color/bottom_navigation_text_color_selector" app:itemActiveIndicatorStyle="@null" app:menu="@menu/dog_profile_navigation_menu" />
 
-    <FrameLayout
-        android:id="@+id/dog_fragment_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

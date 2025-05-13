@@ -1,69 +1,138 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/off_white"> <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"> <com.google.android.material.card.MaterialCardView
+    android:id="@+id/vet_info_card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp"
+    android:layout_marginBottom="16dp">
+
+    <LinearLayout
+        android:id="@+id/vet_info_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"> <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Vet Name:"
+        android:textAppearance="?attr/textAppearanceSubtitle2"
+        android:textColor="@color/text_secondary"
+        android:textStyle="bold"/>
+        <TextView
+            android:id="@+id/tv_display_vet_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="8dp"
+            tools:text="Dr. Jane Smith"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Clinic Name:"
+            android:textAppearance="?attr/textAppearanceSubtitle2"
+            android:textColor="@color/text_secondary"
+            android:textStyle="bold"/>
+        <TextView
+            android:id="@+id/tv_display_clinic_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="8dp"
+            tools:text="Happy Paws Clinic"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Clinic Address:"
+            android:textAppearance="?attr/textAppearanceSubtitle2"
+            android:textColor="@color/text_secondary"
+            android:textStyle="bold"/>
+        <TextView
+            android:id="@+id/tv_display_clinic_address"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="8dp"
+            tools:text="123 Main St, Anytown, CA 91234"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Phone:"
+            android:textAppearance="?attr/textAppearanceSubtitle2"
+            android:textColor="@color/text_secondary"
+            android:textStyle="bold"/>
+        <TextView
+            android:id="@+id/tv_display_vet_phone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="8dp"
+            tools:text="(555) 123-4567"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Email:"
+            android:textAppearance="?attr/textAppearanceSubtitle2"
+            android:textColor="@color/text_secondary"
+            android:textStyle="bold"/>
+        <TextView
+            android:id="@+id/tv_display_vet_email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="8dp"
+            tools:text="jane.smith@happypaws.com"/>
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Medical History:"
+            android:textAppearance="?attr/textAppearanceSubtitle2"
+            android:textColor="@color/text_secondary"
+            android:textStyle="bold"
+            android:layout_marginTop="8dp"/>
+        <TextView
+            android:id="@+id/tv_display_medical_history"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:textColor="@color/text_primary"
+            tools:text="Had a minor skin infection in 2023. All vaccinations up to date as of Jan 2024."/>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
 
     <TextView
-        android:id="@+id/dogGenderVet"
-        android:layout_width="wrap_content"
+        android:id="@+id/tv_no_vet_info"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="26sp"
-        android:layout_marginTop="16dp"
-        android:text="Gender"
-        android:textColor="@color/black"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/dogAgeVet"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Age"
-        android:textColor="@color/black"
-        android:textSize="26sp"
-        android:layout_marginBottom="12dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/vetName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="24sp"
-        android:text="Vet Name"
-        android:textColor="@color/black"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
-
-    <TextView
-        android:id="@+id/vetDoctorName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:textColor="@color/black"
-        android:text="Doctor Name"
-        android:textSize="24sp"
-        android:layout_marginBottom="12dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large" />
-
-    <TextView
-        android:id="@+id/vet_last_visit_date"
-        android:textColor="@color/black"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:textSize="18sp"
-        android:text="Last Visit Date: 00/00/0000" />
-
-    <TextView
-        android:id="@+id/vetDiagnosis"
-        android:textColor="@color/black"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:textSize="18sp"
-        android:text="Diagnosis: diagnos" />
-
+        android:text="No veterinary information is available for this dog."
+        android:textAppearance="?attr/textAppearanceBody1"
+        android:textColor="@color/text_secondary"
+        android:gravity="center"
+        android:layout_marginTop="32dp"
+        android:visibility="gone"
+        tools:visibility="visible"/>
 
 </LinearLayout>
+</androidx.core.widget.NestedScrollView>

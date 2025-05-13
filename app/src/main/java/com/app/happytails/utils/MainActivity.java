@@ -24,21 +24,41 @@ import com.app.happytails.utils.Fragments.ChatFragment;
 import com.app.happytails.utils.Fragments.CreateFragment2;
 import com.app.happytails.utils.Fragments.DogProfile;
 import com.app.happytails.utils.Fragments.HomeFragment;
-import com.app.happytails.utils.Fragments.OAuthFragment;
+import com.app.happytails.utils.Fragments.OAuthFragment; // Keep if used elsewhere
 import com.app.happytails.utils.Fragments.ProfileFragment;
+// Removed import for VetInfoChoiceFragment
+// import com.app.happytails.utils.Fragments.VetInfoChoiceFragment;
+import com.app.happytails.utils.Fragments.VetFragment; // Assuming VetFragment is your VetPageFragment
+
+import com.app.happytails.utils.model.HomeModel; // Import HomeModel
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.messaging.FirebaseMessaging;
 
-public class MainActivity extends AppCompatActivity implements ProfileFragment.OnFragmentInteractionListener {
+import java.io.Serializable; // Import Serializable
+import java.util.ArrayList;
+
+// Implement the listeners for fragments involved in the dog creation flow
+public class MainActivity extends AppCompatActivity
+        implements ProfileFragment.OnFragmentInteractionListener,
+        // Removed implementation for VetInfoChoiceFragment.OnVetInfoChoiceListener
+        VetFragment.OnDogCreationCompleteListener { // Implement listener from VetFragment (your VetPageFragment)
+
 
     private static final String TAG = "MainActivity";
     private BottomNavigationView bottomNav;
     private ImageButton searchButton;
     private Toolbar toolbar;
     private ActivityResultLauncher<String> notificationPermissionLauncher;
+
+    // Variable to hold the collected dog data across fragments
+    private HomeModel currentDogData;
+
+    // IMPORTANT: Ensure this ID matches the FrameLayout in your activity_main.xml
+    private static final int FRAGMENT_CONTAINER_ID = R.id.fragment_container; // <-- Verify this ID
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +70,7 @@ public class MainActivity extends AppCompatActivity implements ProfileFragment.O
 
         // Hide the default action bar
         if (getSupportActionBar() != null) {
-            getSupportActionBar().hide();
+            getSupportActionBar( ).hide();
         }
 
         // Set navigation bar color for Lollipop and above
@@ -62,9 +82,10 @@ public class MainActivity extends AppCompatActivity implements ProfileFragment.O
         // Initialize views
         initializeViews();
 
-        // Load the initial fragment (HomeFragment)
+        // Load the initial fragment (HomeFragment) if the activity is created for the first time
+        // You might need to adjust this logic based on your app's entry point
         if (savedInstanceState == null) {
-            loadFragment(new HomeFragment(), false);
+            loadFragment(new HomeFragment(), false); // HomeFragment might not disable toolbar
         }
 
         // Set up bottom navigation
@@ -140,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements ProfileFragment.O
             // Create a Uri for DogProfile to process
             Uri data = Uri.parse("com.happytails://oauth/redirect?code=" + oauthCode);
             // Pass the deep link to the DogProfile fragment if active
-            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(FRAGMENT_CONTAINER_ID); // Use the correct container ID
             if (currentFragment instanceof DogProfile) {
                 ((DogProfile) currentFragment).handleDeepLink(data);
             } else {
@@ -162,26 +183,42 @@ public class MainActivity extends AppCompatActivity implements ProfileFragment.O
         Bundle args = new Bundle();
         args.putString("creator", userId);
         profileFragment.setArguments(args);
-        loadFragment(profileFragment, true);
+        loadFragment(profileFragment, true); // ProfileFragment likely disables toolbar
     }
 
     private boolean handleNavigation(@NonNull MenuItem item) {
         Fragment fragment = null;
         int itemId = item.getItemId();
+        boolean disableToolbar = false; // Flag to indicate if toolbar should be disabled
+
         if (itemId == R.id.createPostMenu) {
+            // Start the dog creation flow with CreateFragment2
             fragment = new CreateFragment2();
-            loadFragment(fragment, true);
+            disableToolbar = true; // Disable toolbar for creation flow fragments
         } else if (itemId == R.id.homeMenu) {
             fragment = new HomeFragment();
-            loadFragment(fragment, false);
+            disableToolbar = false; // HomeFragment likely has toolbar
         } else if (itemId == R.id.chatsMenu) {
             fragment = new ChatFragment();
-            loadFragment(fragment, false);
+            disableToolbar = false; // ChatFragment likely has toolbar
         } else if (itemId == R.id.profileMenu) {
             fragment = new ProfileFragment();
-            loadFragment(fragment, true);
+            disableToolbar = true; // ProfileFragment likely disables toolbar
+        } else {
+            return false; // Item not handled
         }
-        // Check for pending OAuth code after navigation
+
+        if (fragment != null) {
+            // For bottom navigation, we usually replace without adding to back stack
+            // unless navigating to a detail screen from a list.
+            // For creation flow, we add to back stack to allow stepping back.
+            boolean addToBackStack = (itemId == R.id.createPostMenu || itemId == R.id.profileMenu); // Add to back stack for creation/profile
+
+            loadFragment(fragment, disableToolbar, addToBackStack); // Use the updated loadFragment
+        }
+
+
+        // Check for pending OAuth code after navigation (only relevant if navigating to DogProfile)
         String pendingOAuthCode = getIntent().getStringExtra("pending_oauth_code");
         if (pendingOAuthCode != null && fragment instanceof DogProfile) {
             Uri data = Uri.parse("com.happytails://oauth/redirect?code=" + pendingOAuthCode);
@@ -191,14 +228,39 @@ public class MainActivity extends AppCompatActivity implements ProfileFragment.O
         return true;
     }
 
-    private void loadFragment(Fragment fragment, boolean disableToolbar) {
+    // Updated loadFragment method to include addToBackStack parameter
+    private void loadFragment(Fragment fragment, boolean disableToolbar, boolean addToBackStack) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, fragment);
-        fragmentTransaction.addToBackStack(null);
+
+        // Add a fade animation for transitions (optional but nice)
+        fragmentTransaction.setCustomAnimations(
+                android.R.anim.fade_in,
+                android.R.anim.fade_out,
+                android.R.anim.fade_in,
+                android.R.anim.fade_out
+        );
+
+        fragmentTransaction.replace(FRAGMENT_CONTAINER_ID, fragment);
+
+        if (addToBackStack) {
+            fragmentTransaction.addToBackStack(null);
+        } else {
+            // If not adding to back stack, remove all previous fragments from the stack
+            // This is typical for bottom navigation primary destinations (Home, Chats)
+            fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        }
+
         fragmentTransaction.commit();
-        toggleToolbarVisibility(!disableToolbar);
+        toggleToolbarVisibility(!disableToolbar); // Toggle toolbar visibility based on the flag
+        // bottomNav visibility is handled in onBackPressed based on fragment type
     }
+
+    // Overload loadFragment for backward compatibility if needed (optional)
+    private void loadFragment(Fragment fragment, boolean disableToolbar) {
+        loadFragment(fragment, disableToolbar, false); // Default to not adding to back stack
+    }
+
 
     private void updateFCMToken() {
         FirebaseMessaging.getInstance().getToken()
@@ -227,7 +289,10 @@ public class MainActivity extends AppCompatActivity implements ProfileFragment.O
 
     @Override
     public void onProfileFragmentClosed() {
-        toggleToolbarVisibility(true);
+        // This callback is likely from ProfileFragment when it's closed
+        // You might need similar callbacks from other fragments if they manage toolbar/bottom nav visibility
+        toggleToolbarVisibility(true); // Assuming toolbar should be visible when ProfileFragment is closed
+        bottomNav.setVisibility(View.VISIBLE); // Assuming bottom nav should be visible
     }
 
     private void toggleToolbarVisibility(boolean isVisible) {
@@ -237,28 +302,79 @@ public class MainActivity extends AppCompatActivity implements ProfileFragment.O
     }
 
     @Override
+    public void onDogCreationComplete() {
+        Log.d(TAG, "Dog creation process complete (saved or skipped vet info).");
+        // The VetFragment already navigates to HomeFragment and pops the back stack.
+        // This callback can be used for any additional cleanup or state management in MainActivity.
+        // For example, you might want to ensure bottom nav is visible and toolbar is enabled.
+        bottomNav.setVisibility(View.VISIBLE);
+        toggleToolbarVisibility(true);
+    }
+
+
+    // Placeholder method for the final dog profile creation logic
+    // This method will be called when the user skips vet info
+    // Implement the logic to save the HomeModel data to Firestore or your backend.
+    // This is where you would handle image uploads, setting the creator ID, dog ID, etc.
+    // Show a progress indicator if needed.
+    private void finalizeDogCreation(HomeModel finalDogData) {
+        Log.d(TAG, "Finalizing dog creation for: " + finalDogData.getDogName() + " (Skipped Vet Info)");
+
+        // TODO: Implement your Firebase/backend saving logic here for the case where vet info is skipped.
+        // This logic should be similar to the saveDogInfo in VetFragment, but without vet info fields.
+        // You might want to move the image upload and Firestore saving logic into MainActivity
+        // or a separate class if it's complex and shared between the "Save" and "Skip" paths.
+
+        // Example: Show a message and navigate
+        Toast.makeText(this, "Dog profile creation complete (skipped vet info)!", Toast.LENGTH_SHORT).show();
+        // Navigate to HomeFragment or the new dog's profile page
+        loadFragment(new HomeFragment(), false, false); // Navigate to Home, clear back stack
+    }
+
+    // Override onBackPressed to handle fragment back stack navigation
+    @Override
     public void onBackPressed() {
-        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-        if (currentFragment instanceof HomeFragment) {
-            bottomNav.setSelectedItemId(R.id.homeMenu);
-        } else if (currentFragment instanceof ChatFragment) {
-            bottomNav.setSelectedItemId(R.id.chatsMenu);
-        } else if (currentFragment instanceof ProfileFragment
-                || currentFragment instanceof CreateFragment2
-                || currentFragment instanceof DogProfile) {
-            super.onBackPressed();
-            int backStackCount = getSupportFragmentManager().getBackStackEntryCount();
-            if (backStackCount <= 1) {
-                toggleToolbarVisibility(true);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        int backStackEntryCount = fragmentManager.getBackStackEntryCount();
+
+        if (backStackEntryCount > 0) {
+            // Get the tag of the current fragment before popping
+            Fragment currentFragment = fragmentManager.findFragmentById(FRAGMENT_CONTAINER_ID);
+
+            fragmentManager.popBackStack(); // Pop the top fragment
+
+            // After popping, the previous fragment becomes visible.
+            // Check the type of the fragment that is now visible to adjust UI (toolbar/bottom nav)
+            // This requires checking the fragment manager's state after the pop.
+            // A better approach might be to manage toolbar/bottom nav visibility
+            // in the onResume/onPause of each fragment, or using a central observer.
+
+            // Simple approach: Check the back stack count after popping
+            int newBackStackCount = fragmentManager.getBackStackEntryCount();
+            if (newBackStackCount == 0) {
+                // Back stack is empty, likely returned to a primary bottom nav fragment
                 bottomNav.setVisibility(View.VISIBLE);
+                toggleToolbarVisibility(true); // Assuming primary fragments show toolbar
+                // Ensure the correct bottom nav item is selected based on the visible fragment
+                Fragment visibleFragment = fragmentManager.findFragmentById(FRAGMENT_CONTAINER_ID);
+                if (visibleFragment instanceof HomeFragment) {
+                    bottomNav.setSelectedItemId(R.id.homeMenu);
+                } else if (visibleFragment instanceof ChatFragment) {
+                    bottomNav.setSelectedItemId(R.id.chatsMenu);
+                } // Add other primary fragments if needed
             } else {
-                Fragment previousFragment = getSupportFragmentManager().getFragments()
-                        .get(backStackCount - 2);
-                toggleToolbarVisibility(!(previousFragment instanceof ProfileFragment));
-                bottomNav.setVisibility(previousFragment instanceof ProfileFragment ? View.GONE : View.VISIBLE);
+                // Still fragments on the back stack, likely in a flow (creation, profile, etc.)
+                // You might need more sophisticated logic here to determine which fragment is now visible
+                // and adjust toolbar/bottom nav accordingly.
+                // For simplicity, let's assume fragments in a flow hide bottom nav and manage their own toolbar
+                bottomNav.setVisibility(View.GONE);
+                // Toolbar visibility is likely managed by the fragment itself or loadFragment
             }
+
         } else {
+            // If no fragments on the back stack, call the super method to close the activity
             super.onBackPressed();
         }
     }
+
 }

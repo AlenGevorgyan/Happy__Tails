@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:layout_centerInParent="true"
+    app:cardElevation="12dp"
+    android:gravity="center_horizontal"
+    android:background="@color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal"
+        android:background="@color/white">
+
+        <TextView
+            android:id="@+id/tv_vet_info_question"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Do you want to add veterinary info" android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary" android:gravity="center"
+            android:layout_marginBottom="24dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_vet_info_yes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Yes" android:textColor="@color/white" android:textSize="16sp"
+            android:textStyle="bold"
+            android:paddingVertical="12dp"
+            app:cornerRadius="8dp"
+            app:backgroundTint="@color/accent_color" android:layout_marginBottom="12dp"
+            style="@style/Widget.MaterialComponents.Button"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_vet_info_no"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="No" android:textColor="@color/dark_secondary_color" android:textSize="16sp"
+            android:textStyle="bold"
+            android:paddingVertical="12dp"
+            app:cornerRadius="8dp"
+            app:backgroundTint="@color/white" app:strokeColor="@color/dark_secondary_color" app:strokeWidth="1dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/progress_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:indeterminate="true"
+            app:indicatorColor="@color/accent_color"
+            app:indicatorSize="40dp"
+            app:trackThickness="4dp"
+            android:visibility="gone"
+            android:layout_gravity="center"
+            app:layout_constraintVertical_bias="0.0" />
+
+    </LinearLayout>
+
+
+
+
+
+</com.google.android.material.card.MaterialCardView>
