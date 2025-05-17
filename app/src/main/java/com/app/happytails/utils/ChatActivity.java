@@ -218,7 +218,7 @@ public class ChatActivity extends AppCompatActivity {
                         .setQuery(q, MessageModel.class)
                         .build();
 
-        adapter = new MessagesAdapter(opts, this);
+        adapter = new MessagesAdapter(opts, this, FirebaseUtil.currentUserId(), otherUser.getUserId());
         LinearLayoutManager lm = new LinearLayoutManager(this);
         lm.setReverseLayout(false);
         lm.setStackFromEnd(true);

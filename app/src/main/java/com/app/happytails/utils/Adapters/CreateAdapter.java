@@ -41,7 +41,7 @@ public class CreateAdapter extends RecyclerView.Adapter<CreateAdapter.CreateHold
                         .into(holder.imageView);
 
         holder.imageView.setOnClickListener(v -> {
-            chooseImage(list.get(position).getPicUrl());
+            chooseImage(Uri.parse(list.get(position).getPicUrl()));
         });
     }
 

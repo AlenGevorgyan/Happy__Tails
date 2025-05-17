@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Vibrator;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -14,6 +15,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -27,6 +29,7 @@ import com.denzcoskun.imageslider.constants.ScaleTypes;
 import com.denzcoskun.imageslider.models.SlideModel;
 import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 
@@ -35,11 +38,14 @@ public class MessagesAdapter extends FirestoreRecyclerAdapter<MessageModel, Mess
     private static OnPressed onPressed;
     private Handler handler;
     private Runnable runnable;
+    private String userId1, userId2;
     private boolean isHolding = false;
 
-    public MessagesAdapter(FirestoreRecyclerOptions<MessageModel> options, Context context) {
+    public MessagesAdapter(FirestoreRecyclerOptions<MessageModel> options, Context context, String userId1, String userId2) {
         super(options);
         this.context = context;
+        this.userId1 = userId1;
+        this.userId2 = userId2;
     }
 
     @NonNull
@@ -64,24 +70,23 @@ public class MessagesAdapter extends FirestoreRecyclerAdapter<MessageModel, Mess
                     switch (event.getAction()) {
                         case MotionEvent.ACTION_DOWN:
                             isHolding = true;
-                            handler = new Handler();
-                            handler.postDelayed(runnable = new Runnable() {
-                                @Override
-                                public void run() {
-                                    if (isHolding) {
-                                        Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-                                        if (vibrator != null) {
-                                            vibrator.vibrate(100); // Vibration duration
-                                        }
-                                        onPressed.delete(model.getId());
+                            handler = new Handler(Looper.getMainLooper());
+                            handler.postDelayed(runnable = () -> {
+                                if (isHolding) {
+                                    Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+                                    if (vibrator != null) {
+                                        vibrator.vibrate(100);
                                     }
+                                    showDeleteDialog(model.getId(), holder.getAdapterPosition());
                                 }
                             }, 1000);
                             break;
                         case MotionEvent.ACTION_UP:
                         case MotionEvent.ACTION_CANCEL:
                             isHolding = false;
-                            handler.removeCallbacks(runnable);
+                            if (handler != null) {
+                                handler.removeCallbacks(runnable);
+                            }
                             break;
                     }
                     return true;
@@ -187,14 +192,31 @@ public class MessagesAdapter extends FirestoreRecyclerAdapter<MessageModel, Mess
         }
     }
 
-    private void showDeleteDialog() {
+    private void showDeleteDialog(String messageId, int position) {
         new AlertDialog.Builder(context)
                 .setTitle("Delete Message")
-                .setMessage("Do you want to delete this message?")
+                .setMessage("Are you sure you want to delete this message?")
                 .setPositiveButton("Yes", (dialog, which) -> {
-                    // Implement deletion logic here
+                    // Delete from Firestore
+                    FirebaseFirestore.getInstance()
+                            .collection("chatrooms")
+                            .document(FirebaseUtil.getChatroomId(userId1, userId2)) // Assumes FirebaseUtil.getChatId() returns the current chatId
+                            .collection("chats")
+                            .document(messageId)
+                            .delete()
+                            .addOnSuccessListener(aVoid -> {
+                                Toast.makeText(context, "Message deleted", Toast.LENGTH_SHORT).show();
+                                // Notify adapter of data change (FirestoreRecyclerAdapter handles UI update)
+                                if (onPressed != null) {
+                                    onPressed.delete(messageId);
+                                }
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(context, "Failed to delete message: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            });
                 })
                 .setNegativeButton("No", (dialog, which) -> dialog.dismiss())
+                .setCancelable(true)
                 .show();
     }
 }

@@ -1,22 +1,21 @@
 package com.app.happytails.utils.model;
 
-import android.net.Uri;
 
 public class GalleryImage {
-    public Uri picUri;
+    public String picUri;
 
     public GalleryImage() {
+
     }
 
-    public GalleryImage(Uri picUrl) {
+    public GalleryImage(String picUrl) {
         this.picUri = picUrl;
     }
-
-    public Uri getPicUrl() {
+    public String getPicUrl() {
         return picUri;
     }
 
-    public void setPicUrl(Uri picUrl) {
+    public void setPicUrl(String picUrl) {
         this.picUri = picUrl;
     }
 

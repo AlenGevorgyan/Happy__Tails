@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.app.happytails.R;
 import com.bumptech.glide.Glide;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryViewHolder> {
@@ -54,6 +55,11 @@ public class GalleryAdapter extends RecyclerView.Adapter<GalleryAdapter.GalleryV
     @Override
     public int getItemCount() {
         return imageUris.size();
+    }
+
+    public void setImages(List<Uri> uriList) {
+        this.imageUris = uriList;
+        notifyDataSetChanged(); // Notify the adapter that the data set has changed
     }
 
     static class GalleryViewHolder extends RecyclerView.ViewHolder {
