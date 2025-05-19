@@ -21,7 +21,7 @@
     <color name="gray">#959595</color>
 
     <color name="transparent">#00FFFFFF</color>
-
+    <color name="success_green">#69F436</color>
 
 
 </resources>

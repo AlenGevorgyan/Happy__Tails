@@ -57,6 +57,8 @@ public class MessagesAdapter extends FirestoreRecyclerAdapter<MessageModel, Mess
 
     @Override
     protected void onBindViewHolder(@NonNull MessagesViewHolder holder, int position, @NonNull MessageModel model) {
+        // Debug log for senderId and currentUserId
+        android.util.Log.d("MessagesAdapter", "senderId: " + model.getSenderId() + ", currentUserId: " + FirebaseUtil.currentUserId());
         if (model.getSenderId().equals(FirebaseUtil.currentUserId())) {
             holder.leftChatLayout.setVisibility(View.GONE);
             holder.rightChatLayout.setVisibility(View.VISIBLE);

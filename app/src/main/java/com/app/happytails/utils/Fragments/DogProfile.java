@@ -1,5 +1,7 @@
 package com.app.happytails.utils.Fragments;
 
+import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -35,6 +37,8 @@ import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import okhttp3.OkHttpClient;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class DogProfile extends Fragment {
 
@@ -85,13 +89,15 @@ public class DogProfile extends Fragment {
 
         db = FirebaseFirestore.getInstance();
         firebaseAuth = FirebaseAuth.getInstance();
-        httpClient = new OkHttpClient(); // Note: OkHttpClient should ideally be a singleton or managed lifecycle-aware
+        httpClient = new OkHttpClient();
 
         // Setup toolbar back navigation
         setupToolbar(view);
 
+        // Get dogId from arguments
         if (getArguments() != null) {
             dogId = getArguments().getString("dogId");
+            Log.d(TAG, "DogProfile created with dogId: " + dogId);
         }
 
         // Load data from Firestore
@@ -102,17 +108,11 @@ public class DogProfile extends Fragment {
             Log.e(TAG, "Dog ID is missing in arguments!");
             Toast.makeText(getContext(), "Error: Dog ID not provided.", Toast.LENGTH_SHORT).show();
             handleBackPress(); // Go back if essential data is missing
+            return view;
         }
-
 
         // Setup bottom navigation
         setupBottomNavigation();
-
-        // Do NOT load the default nested fragment here. Load it after data is fetched.
-        // if (savedInstanceState == null) {
-        //     loadNestedFragment(new GalleryFragment());
-        // }
-
 
         donateButton.setOnClickListener(v -> initiateDonation());
 
@@ -266,105 +266,294 @@ public class DogProfile extends Fragment {
     private void initiateDonation() {
         FirebaseUser user = firebaseAuth.getCurrentUser();
         if (user == null) {
-            Toast.makeText(getContext(), "Please login to donate", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        PatreonOAuthHelper.startPatreonOAuth(requireContext());
-    }
-
-    public void handleDeepLink(Uri data) {
-        if (data != null && "com.happytails".equals(data.getScheme()) && "oauth".equals(data.getHost())) {
-            // Check if the deep link is for OAuth redirect
-            String code = data.getQueryParameter("code");
-            if (code != null) {
-                Log.d(TAG, "Handling OAuth code from deep link");
-                handleOAuthCode(code);
-            } else {
-                Toast.makeText(getContext(), "Invalid OAuth response", Toast.LENGTH_SHORT).show();
-            }
-        } else if (data != null) {
-            // Handle other potential deep links if necessary
-            Log.d(TAG, "Received unhandled deep link: " + data.toString());
-        }
-    }
-
-    private void handleOAuthCode(String code) {
-        String userId = firebaseAuth.getCurrentUser() != null ? firebaseAuth.getCurrentUser().getUid() : null;
-        if (userId == null) {
-            Log.e(TAG, "No user signed in");
-            Toast.makeText(getContext(), "User not signed in", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "User not authenticated");
+            requireActivity().runOnUiThread(() -> 
+                Toast.makeText(requireContext(), "Please log in to donate", Toast.LENGTH_SHORT).show()
+            );
             return;
         }
 
-        PatreonOAuthHelper.exchangeCodeForToken(requireContext(), code, new PatreonOAuthHelper.TokenCallback() {
-            @Override
-            public void onSuccess(String accessToken) {
-                Log.d(TAG, "Token exchanged successfully");
-                // Optionally save the access token for the user if needed for future API calls
-                // FirebaseFirestore.getInstance().collection("users").document(userId).update("patreonAccessToken", accessToken);
+        if (dogId == null) {
+            Log.e(TAG, "Dog ID is null");
+            requireActivity().runOnUiThread(() -> 
+                Toast.makeText(requireContext(), "Error: Dog ID not found", Toast.LENGTH_SHORT).show()
+            );
+            return;
+        }
 
-                PatreonOAuthHelper.checkPatronStatus(requireContext(), accessToken, new PatreonOAuthHelper.PatronStatusCallback() { // Pass accessToken here
-                    @Override
-                    public void onSuccess(boolean isPatron, double pledgeAmount) {
-                        if (isPatron) {
-                            // Update funding if the user is a patron and has a pledge
-                            if (pledgeAmount > 0) {
-                                updateFundingInFirestore(pledgeAmount);
-                                Toast.makeText(getContext(), "Thank you for your donation!", Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "Starting donation process for user: " + user.getUid() + ", dog: " + dogId);
+
+        // First get the dog's Patreon URL from Firestore
+        db.collection("dogs").document(dogId)
+            .get()
+            .addOnSuccessListener(dogSnapshot -> {
+                if (!dogSnapshot.exists()) {
+                    Log.e(TAG, "Dog document not found");
+                    requireActivity().runOnUiThread(() -> 
+                        Toast.makeText(requireContext(), "Error: Dog profile not found", Toast.LENGTH_SHORT).show()
+                    );
+                    return;
+                }
+
+                String patreonUrl = dogSnapshot.getString("patreonUrl");
+                if (patreonUrl == null || patreonUrl.isEmpty()) {
+                    Log.e(TAG, "Patreon URL not found for dog");
+                    requireActivity().runOnUiThread(() -> 
+                        Toast.makeText(requireContext(), "Error: Patreon link not found", Toast.LENGTH_SHORT).show()
+                    );
+                    return;
+                }
+
+                // Check if user already has Patreon tokens
+                db.collection("users")
+                    .document(user.getUid())
+                    .get()
+                    .addOnSuccessListener(userSnapshot -> {
+                        if (userSnapshot.exists()) {
+                            String accessToken = userSnapshot.getString("patreonAccessToken");
+                            if (accessToken != null && !accessToken.isEmpty()) {
+                                Log.d(TAG, "User has Patreon tokens, checking patron status");
+                                // User has tokens, check patron status
+                                PatreonOAuthHelper.checkPatronStatus(requireContext(), user.getUid(), new PatreonOAuthHelper.PatronStatusCallback() {
+                                    @Override
+                                    public void onSuccess(boolean isPatron, double pledgeAmount) {
+                                        if (isAdded()) {
+                                            requireActivity().runOnUiThread(() -> {
+                                                if (isPatron) {
+                                                    // User is already a patron, show their pledge amount
+                                                    Log.d(TAG, "User is already a patron with pledge: $" + pledgeAmount);
+                                                    Toast.makeText(requireContext(),
+                                                        String.format("You are already supporting with $%.2f/month", pledgeAmount),
+                                                        Toast.LENGTH_LONG).show();
+                                                    updateDonationUI(true, pledgeAmount);
+                                                } else {
+                                                    // User has tokens but isn't a patron, redirect to Patreon
+                                                    Log.d(TAG, "User has tokens but isn't a patron, redirecting to Patreon");
+                                                    Toast.makeText(requireContext(), "Redirecting to Patreon...", Toast.LENGTH_SHORT).show();
+                                                    // Open Patreon URL directly
+                                                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(patreonUrl));
+                                                    startActivity(intent);
+                                                }
+                                            });
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onFailure(String errorMessage) {
+                                        if (isAdded()) {
+                                            Log.e(TAG, "Failed to check patron status: " + errorMessage);
+                                            // If check fails, redirect to Patreon
+                                            requireActivity().runOnUiThread(() -> {
+                                                Log.d(TAG, "Redirecting to Patreon due to status check failure");
+                                                Toast.makeText(requireContext(), "Redirecting to Patreon...", Toast.LENGTH_SHORT).show();
+                                                // Open Patreon URL directly
+                                                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(patreonUrl));
+                                                startActivity(intent);
+                                            });
+                                        }
+                                    }
+                                });
                             } else {
-                                Toast.makeText(getContext(), "You are a patron, but your pledge is $0.", Toast.LENGTH_SHORT).show();
+                                // No existing tokens, start OAuth flow
+                                Log.d(TAG, "No existing Patreon tokens, starting OAuth");
+                                requireActivity().runOnUiThread(() -> {
+                                    Toast.makeText(requireContext(), "Starting Patreon authorization...", Toast.LENGTH_SHORT).show();
+                                    PatreonOAuthHelper.startPatreonOAuth(requireContext(), dogId);
+                                });
                             }
                         } else {
-                            Toast.makeText(getContext(), "You are not a patron yet.", Toast.LENGTH_SHORT).show();
+                            Log.e(TAG, "User document not found");
+                            requireActivity().runOnUiThread(() -> 
+                                Toast.makeText(requireContext(), "Error: User profile not found", Toast.LENGTH_SHORT).show()
+                            );
                         }
-                    }
-
-                    @Override
-                    public void onFailure(String errorMessage) {
-                        Log.e(TAG, "Failed to check patron status: " + errorMessage);
-                        Toast.makeText(getContext(), "Error verifying donation: " + errorMessage, Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-
-            @Override
-            public void onFailure(String errorMessage) {
-                Log.e(TAG, "Token exchange failed: " + errorMessage);
-                Toast.makeText(getContext(), "Donation failed: " + errorMessage, Toast.LENGTH_SHORT).show();
-            }
-        });
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Error checking user document", e);
+                        requireActivity().runOnUiThread(() -> 
+                            Toast.makeText(requireContext(), "Error checking donation status", Toast.LENGTH_SHORT).show()
+                        );
+                    });
+            })
+            .addOnFailureListener(e -> {
+                Log.e(TAG, "Error fetching dog document", e);
+                requireActivity().runOnUiThread(() -> 
+                    Toast.makeText(requireContext(), "Error fetching dog profile", Toast.LENGTH_SHORT).show()
+                );
+            });
     }
 
+    private void updateDonationUI(boolean isPatron, double pledgeAmount) {
+        if (!isAdded()) return;
 
-    private void updateFundingInFirestore(double amount) {
-        // Ensure targetAmount is not zero to avoid division by zero
-        if (targetAmount <= 0) {
-            Log.w(TAG, "Target amount is zero or less, cannot calculate percentage.");
-            // Optionally set a default target or handle this case
-            targetAmount = 100.0; // Example: set a default target if not set
+        // Update the donate button text and appearance
+        if (donateButton != null) {
+            if (isPatron) {
+                donateButton.setText(String.format("Supporting: $%.2f/month", pledgeAmount));
+                donateButton.setEnabled(false); // Disable button if already supporting
+                // Optionally change button color or style
+                donateButton.setBackgroundTintList(getResources().getColorStateList(R.color.success_green));
+            } else {
+                donateButton.setText("Donate Now");
+                donateButton.setEnabled(true);
+                // Reset button style
+                donateButton.setBackgroundTintList(getResources().getColorStateList(R.color.accent_color));
+            }
         }
 
-        double newAmount = currentAmount + amount;
-        int newPercentage = (int) ((newAmount / targetAmount) * 100);
-        // Cap percentage at 100
-        if (newPercentage > 100) {
-            newPercentage = 100;
+        // Update funding progress if needed
+        if (isPatron) {
+            // Add pledge amount to current funding
+            currentAmount += pledgeAmount;
+            updateFundingUI();
+        }
+    }
+
+    private void updateFundingUI() {
+        if (fundingAmountTv != null && targetAmountTv != null && fundingProgress != null) {
+            fundingAmountTv.setText(String.format("$%.2f", currentAmount));
+            targetAmountTv.setText(String.format("$%.2f", targetAmount));
+
+            int progress = (int) ((currentAmount / targetAmount) * 100);
+            fundingProgress.setProgress(progress);
+        }
+    }
+
+    // Update handleDeepLink to use the new UI update method
+    public void handleDeepLink(Uri data) {
+        if (!isAdded()) {
+            Log.e(TAG, "Fragment not attached to activity");
+            return;
         }
 
-        Map<String, Object> updates = new HashMap<>();
-        updates.put("fundingAmount", newAmount);
-        updates.put("fundingPercentage", newPercentage);
+        if (data == null) {
+            Log.e(TAG, "Deep link data is null");
+            return;
+        }
 
-        db.collection("dogs").document(dogId)
-                .update(updates)
-                .addOnSuccessListener(aVoid -> {
-                    Log.d(TAG, "Funding updated successfully");
-                    // UI update is handled by the snapshot listener
+        String code = data.getQueryParameter("code");
+        String state = data.getQueryParameter("state");
+
+        Log.d(TAG, "Received deep link - code: " + (code != null ? "present" : "null"));
+        Log.d(TAG, "Received deep link - state: " + (state != null ? "present" : "null"));
+
+        if (code == null || state == null) {
+            Log.e(TAG, "Missing code or state in deep link");
+            Toast.makeText(requireContext(), "Error: Missing required parameters", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            // Parse state to get userId and dogId
+            JSONObject stateData = new JSONObject(state);
+            String userId = stateData.getString("userId");
+            String receivedDogId = stateData.getString("dogId");
+
+            Log.d(TAG, "Parsed state - userId: " + userId + ", dogId: " + receivedDogId);
+
+            // Verify we're on the correct dog profile
+            if (!receivedDogId.equals(dogId)) {
+                Log.e(TAG, "Dog ID mismatch - received: " + receivedDogId + ", current: " + dogId);
+                Toast.makeText(requireContext(), "Error: Wrong dog profile", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Exchange code for tokens
+            Log.d(TAG, "Exchanging authorization code for tokens");
+            PatreonOAuthHelper.exchangeCodeForTokens(requireContext(), code, new PatreonOAuthHelper.TokenExchangeCallback() {
+                @Override
+                public void onSuccess(String accessToken, String refreshToken) {
+                    Log.d(TAG, "Successfully obtained access tokens");
+                    if (isAdded()) {
+                        Toast.makeText(requireContext(), "Authorization successful!", Toast.LENGTH_SHORT).show();
+
+                        // Check patron status using the new access token
+                        PatreonOAuthHelper.checkPatronStatus(requireContext(), userId, new PatreonOAuthHelper.PatronStatusCallback() {
+                            @Override
+                            public void onSuccess(boolean isPatron, double pledgeAmount) {
+                                if (isAdded()) {
+                                    if (isPatron) {
+                                        Log.d(TAG, "User is a patron with pledge amount: $" + pledgeAmount);
+                                        Toast.makeText(requireContext(),
+                                            String.format("Thank you for your $%.2f pledge!", pledgeAmount),
+                                            Toast.LENGTH_LONG).show();
+                                        updateDonationUI(true, pledgeAmount);
+                                    } else {
+                                        Log.d(TAG, "User is not a patron");
+                                        updateDonationUI(false, 0);
+                                    }
+                                    // Reload data to show updated status
+                                    loadDogData();
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(String errorMessage) {
+                                if (isAdded()) {
+                                    Log.e(TAG, "Failed to check patron status: " + errorMessage);
+                                    Toast.makeText(requireContext(),
+                                        "Authorization successful, but couldn't verify pledge status",
+                                        Toast.LENGTH_LONG).show();
+                                    updateDonationUI(false, 0);
+                                    loadDogData(); // Still reload data
+                                }
+                            }
+                        });
+                    }
+                }
+
+                @Override
+                public void onFailure(String errorMessage) {
+                    Log.e(TAG, "Failed to exchange code for tokens: " + errorMessage);
+                    if (isAdded()) {
+                        Toast.makeText(requireContext(),
+                            "Error completing authorization: " + errorMessage,
+                            Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+
+        } catch (JSONException e) {
+            Log.e(TAG, "Failed to parse state JSON", e);
+            Toast.makeText(requireContext(), "Error: Invalid state data", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void updateFundingProgress(int newPledgeAmountCents) {
+        if (dogId != null) {
+            db.collection("dogs").document(dogId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        double currentFundingAmount = documentSnapshot.getDouble("fundingAmount") != null ?
+                            documentSnapshot.getDouble("fundingAmount") : 0.0;
+                        double newAmount = currentFundingAmount + (newPledgeAmountCents / 100.0);
+
+                        // Update the funding amount in Firestore
+                        db.collection("dogs").document(dogId)
+                            .update("fundingAmount", newAmount)
+                            .addOnSuccessListener(aVoid -> {
+                                // Update UI
+                                currentAmount = newAmount;
+                                updateFundingUI();
+
+                                // Log success
+                                Log.d(TAG, "Funding amount updated successfully. New amount: $" + newAmount);
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e(TAG, "Error updating funding amount", e);
+                                Toast.makeText(getContext(), "Error updating funding amount", Toast.LENGTH_SHORT).show();
+                            });
+                    } else {
+                        Log.e(TAG, "Dog document not found");
+                        Toast.makeText(getContext(), "Error: Dog profile not found", Toast.LENGTH_SHORT).show();
+                    }
                 })
                 .addOnFailureListener(e -> {
-                    Log.e(TAG, "Failed to update funding", e);
-                    Toast.makeText(getContext(), "Failed to update funding", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Error fetching dog document", e);
+                    Toast.makeText(getContext(), "Error fetching dog profile", Toast.LENGTH_SHORT).show();
                 });
+        }
     }
 
     // Setup bottom navigation
@@ -463,5 +652,42 @@ public class DogProfile extends Fragment {
         if (dogListener != null) {
             dogListener.remove();
         }
+    }
+
+    private void checkPatronStatus() {
+        FirebaseUser user = firebaseAuth.getCurrentUser();
+        if (user == null) {
+            Log.e(TAG, "User not authenticated");
+            Toast.makeText(requireContext(), "Please log in to check donation status", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Log.d(TAG, "Checking patron status for user: " + user.getUid());
+        PatreonOAuthHelper.checkPatronStatus(requireContext(), user.getUid(), new PatreonOAuthHelper.PatronStatusCallback() {
+            @Override
+            public void onSuccess(boolean isPatron, double pledgeAmount) {
+                if (isAdded()) {
+                    if (isPatron) {
+                        Log.d(TAG, "User is a patron with pledge: $" + pledgeAmount);
+                        Toast.makeText(requireContext(),
+                            String.format("You are supporting with $%.2f/month", pledgeAmount),
+                            Toast.LENGTH_LONG).show();
+                        updateDonationUI(true, pledgeAmount);
+                    } else {
+                        Log.d(TAG, "User is not a patron");
+                        Toast.makeText(requireContext(), "You are not currently supporting", Toast.LENGTH_SHORT).show();
+                        updateDonationUI(false, 0);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(String errorMessage) {
+                if (isAdded()) {
+                    Log.e(TAG, "Failed to check patron status: " + errorMessage);
+                    Toast.makeText(requireContext(), "Error checking donation status", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 }

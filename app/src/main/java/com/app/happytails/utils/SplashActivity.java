@@ -63,8 +63,26 @@ public class SplashActivity extends AppCompatActivity {
             NotificationHelper.requestNotificationPermissionWithLauncher(notificationPermissionLauncher);
         }
 
-        // Handle the intent (for deep linking or OAuth redirect)
-        handleIntent(getIntent());
+        // Check for OAuth redirect
+        Intent intent = getIntent();
+        Uri data = intent.getData();
+        
+        if (data != null && "com.happytails".equals(data.getScheme()) && 
+            "oauth".equals(data.getHost()) && "/redirect".equals(data.getPath())) {
+            String code = data.getQueryParameter("code");
+            if (code != null) {
+                Log.d(TAG, "Received OAuth code: " + code);
+                navigateToMainActivityWithOAuth(code);
+                return;
+            }
+        }
+
+        // Normal app startup flow
+        if (FirebaseUtil.isLoggedIn()) {
+            navigateToMainActivity();
+        } else {
+            navigateToSignInActivity();
+        }
     }
 
     /**
@@ -221,9 +239,10 @@ public class SplashActivity extends AppCompatActivity {
      */
     private void navigateToMainActivityWithOAuth(String code) {
         Intent mainIntent = new Intent(this, MainActivity.class);
-        mainIntent.putExtra("oauth_code", code); // Pass the OAuth code
+        mainIntent.putExtra("oauth_code", code);
+        mainIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(mainIntent);
-        finish(); // Close SplashActivity
+        finish();
     }
 
     /**

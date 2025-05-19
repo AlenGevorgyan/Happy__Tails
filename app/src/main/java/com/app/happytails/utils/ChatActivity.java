@@ -211,7 +211,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void setupChatRecyclerView() {
         Query q = FirebaseUtil.getChatroomMessageReference(chatroomId)
-                .orderBy("time", Query.Direction.ASCENDING);
+                .orderBy("time", Query.Direction.DESCENDING);
 
         FirestoreRecyclerOptions<MessageModel> opts =
                 new FirestoreRecyclerOptions.Builder<MessageModel>()

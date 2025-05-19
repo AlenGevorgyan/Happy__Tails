@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -40,6 +42,9 @@ import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.io.Serializable; // Import Serializable
 import java.util.ArrayList;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 // Implement the listeners for fragments involved in the dog creation flow
 public class MainActivity extends AppCompatActivity
@@ -154,28 +159,66 @@ public class MainActivity extends AppCompatActivity
     private void handleIntent(Intent intent) {
         if (intent == null) return;
 
-        // Check for OAuth code from SplashActivity
-        String oauthCode = intent.getStringExtra("oauth_code");
-        if (oauthCode != null) {
-            Log.d(TAG, "Received OAuth code: " + oauthCode);
-            // Create a Uri for DogProfile to process
-            Uri data = Uri.parse("com.happytails://oauth/redirect?code=" + oauthCode);
-            // Pass the deep link to the DogProfile fragment if active
-            Fragment currentFragment = getSupportFragmentManager().findFragmentById(FRAGMENT_CONTAINER_ID); // Use the correct container ID
-            if (currentFragment instanceof DogProfile) {
-                ((DogProfile) currentFragment).handleDeepLink(data);
-            } else {
-                // Store the code or navigate to DogProfile
-                Log.w(TAG, "DogProfile not active, storing OAuth code");
-                intent.putExtra("pending_oauth_code", oauthCode); // Store for later use
-                Toast.makeText(this, "Please open the dog profile to complete donation", Toast.LENGTH_SHORT).show();
-            }
-            // Clear the oauth_code extra to prevent reprocessing
-            intent.removeExtra("oauth_code");
-            setIntent(intent);
-        }
+        Uri data = intent.getData();
+        if (data == null) return;
 
-        // Notification handling (unchanged)
+        // Check if the intent is a deep link for Patreon OAuth success
+        if ("com.happytails".equals(data.getScheme()) && "oauth-success".equals(data.getHost())) {
+            Log.d(TAG, "Received Patreon OAuth deep link: " + data.toString());
+            
+            String code = data.getQueryParameter("code");
+            String state = data.getQueryParameter("state");
+
+            if (code != null && state != null) {
+                try {
+                    // Parse state to get userId and dogId
+                    JSONObject stateData = new JSONObject(state);
+                    String userId = stateData.getString("userId");
+                    String dogId = stateData.getString("dogId");
+
+                    Log.d(TAG, "Extracted userId: " + userId);
+                    Log.d(TAG, "Extracted dogId: " + dogId);
+
+                    if (dogId != null) {
+                        // Create and load DogProfile fragment with the dogId
+                        DogProfile dogProfileFragment = new DogProfile();
+                        Bundle args = new Bundle();
+                        args.putString("dogId", dogId);
+                        dogProfileFragment.setArguments(args);
+
+                        // Load the fragment
+                        loadFragment(dogProfileFragment, true);
+
+                        // Wait for the fragment to be attached and initialized
+                        getSupportFragmentManager().executePendingTransactions();
+
+                        // Use Handler to delay the deep link handling
+                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                            if (dogProfileFragment.isAdded() && dogProfileFragment.getView() != null) {
+                                Log.d(TAG, "Handling deep link after fragment initialization");
+                                dogProfileFragment.handleDeepLink(data);
+                            } else {
+                                Log.e(TAG, "Fragment not ready after delay");
+                                Toast.makeText(this, "Error: Fragment not ready", Toast.LENGTH_SHORT).show();
+                            }
+                        }, 1000); // 1 second delay to ensure fragment is ready
+
+                    } else {
+                        Log.e(TAG, "Dog ID not found in state parameter");
+                        Toast.makeText(this, "Error: Dog ID not found in state parameter", Toast.LENGTH_LONG).show();
+                    }
+                } catch (JSONException e) {
+                    Log.e(TAG, "Error parsing state parameter: " + e.getMessage());
+                    Toast.makeText(this, "Error processing donation data", Toast.LENGTH_LONG).show();
+                }
+            } else {
+                Log.e(TAG, "Missing code or state in deep link");
+                Toast.makeText(this, "Error: Missing required parameters", Toast.LENGTH_LONG).show();
+            }
+
+            // Clear the intent data to prevent reprocessing
+            setIntent(new Intent());
+        }
     }
 
     private void loadProfileFragment(String userId) {

@@ -113,7 +113,19 @@
             android:exported="false" /> <!-- MainActivity: your primary in‐app nav host -->
         <activity
             android:name=".utils.MainActivity"
-            android:exported="true" />
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW\" />
+                <category android:name="android.intent.category.DEFAULT\" />
+                <category android:name="android.intent.category.BROWSABLE\" />
+                <data
+                    android:scheme="com.happytails\"
+                    android:host="oauth-success\" />
+            </intent-filter>
+        </activity>
+        <!-- Deep link for Patreon OAuth callback from Cloud Function -->
+
     </application>
 
 </manifest>

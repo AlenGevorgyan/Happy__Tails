@@ -17,9 +17,14 @@
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "index.html"
     ],
     "rewrites": [
+      {
+        "source": "/",
+        "destination": "/redirect_patreon.html"
+      },
       {
         "source": "/redirect_patreon",
         "destination": "/redirect_patreon.html"
