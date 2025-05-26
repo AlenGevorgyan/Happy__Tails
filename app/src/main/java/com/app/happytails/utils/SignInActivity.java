@@ -62,8 +62,8 @@ public class SignInActivity extends AppCompatActivity {
 
 
     private void testSignIn() {
-        String email = "alengevorgyan2009@gmail.com";
-        String password = "Alen2005.2009";
+        String email = "individualproject2025@gmail.com";
+        String password = "Samsung2025";
 
         if (email.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show();
