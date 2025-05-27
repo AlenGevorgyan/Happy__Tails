@@ -1,10 +1,12 @@
 package com.app.happytails.utils.Fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,15 +16,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.happytails.R;
 import com.app.happytails.utils.Adapters.HomeAdapter;
-import com.app.happytails.utils.MainActivity;
 import com.app.happytails.utils.model.HomeModel;
+import com.app.happytails.utils.SearchActivity;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,40 +45,19 @@ public class HomeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
+        // 🔍 Setup Search Icon Click
+        ImageView searchIcon = view.findViewById(R.id.searchIcon);
+        searchIcon.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), SearchActivity.class);
+            startActivity(intent);
+        });
+
         recyclerView = view.findViewById(R.id.homeRecyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         postList = new ArrayList<>();
         homeAdapter = new HomeAdapter(getContext(), postList);
         recyclerView.setAdapter(homeAdapter);
 
-        // Add scroll listener
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            private int lastScrollY = 0;
-            private boolean isScrollingDown = false;
-
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                
-                // Calculate if scrolling down
-                isScrollingDown = dy > 0;
-                
-                // Get current scroll position
-                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-                if (layoutManager != null) {
-                    int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
-                    View firstVisibleItem = layoutManager.findViewByPosition(firstVisibleItemPosition);
-                    int scrollY = firstVisibleItem != null ? firstVisibleItem.getTop() : 0;
-                    
-                    // Notify MainActivity about scroll changes
-                    if (getActivity() instanceof MainActivity) {
-                        ((MainActivity) getActivity()).onScrollChanged(scrollY, isScrollingDown);
-                    }
-                }
-                
-                lastScrollY = dy;
-            }
-        });
 
         db = FirebaseFirestore.getInstance();
         dogsCollection = db.collection("dogs");
@@ -113,10 +94,7 @@ public class HomeFragment extends Fragment {
 
     private HomeModel mapDocumentToHomeModel(DocumentSnapshot doc) {
         try {
-            // Assign Firestore document ID to dogId
             String dogId = doc.getId();
-
-            // Fetch all values safely
             String creator = doc.getString("creator");
             String dogName = doc.getString("dogName");
             String mainImageUrl = doc.getString("mainImage");
@@ -125,15 +103,12 @@ public class HomeFragment extends Fragment {
             ArrayList<String> galleryImageUrls = doc.contains("galleryImages") ?
                     (ArrayList<String>) doc.get("galleryImages") : new ArrayList<>();
 
-            // Funding progress
             int fundingProgress = doc.contains("fundingPercentage") ?
                     doc.getLong("fundingPercentage").intValue() : 0;
 
-            // Supporters list
             ArrayList<String> supporters = doc.contains("supporters") ?
                     (ArrayList<String>) doc.get("supporters") : new ArrayList<>();
 
-            // Return a properly mapped HomeModel
             return new HomeModel(
                     creator,
                     dogId,

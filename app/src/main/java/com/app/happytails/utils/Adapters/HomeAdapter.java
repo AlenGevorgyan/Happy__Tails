@@ -130,6 +130,20 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.HomeViewHolder
                         .commit();
             }
         });
+
+        holder.creatorName.setOnClickListener(view -> {
+            ProfileFragment fragment = new ProfileFragment();
+            Bundle args = new Bundle();
+            args.putString("creator", post.getCreator());
+            fragment.setArguments(args);
+            if (context instanceof AppCompatActivity) {
+                ((AppCompatActivity) context).getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, fragment)
+                        .addToBackStack(null)
+                        .commit();
+            }
+        });
     }
 
 

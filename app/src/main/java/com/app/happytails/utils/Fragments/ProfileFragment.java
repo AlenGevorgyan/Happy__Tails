@@ -175,6 +175,22 @@ public class ProfileFragment extends Fragment {
         settingsBtn.setOnClickListener(v -> openSettingsFragment());
         chatBtn.setOnClickListener(v -> navigateToTheChat());
         followBtn.setOnClickListener(v -> handleFollowButtonClick());
+        
+        // Add click listener for username
+        username.setOnClickListener(v -> {
+            if (profileUid != null) {
+                ProfileFragment profileFragment = new ProfileFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString("creator", profileUid);
+                bundle.putInt("container_id", R.id.fragment_container);
+                profileFragment.setArguments(bundle);
+
+                FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                transaction.replace(R.id.fragment_container, profileFragment);
+                transaction.addToBackStack(null);
+                transaction.commit();
+            }
+        });
 
         setupScrollListener();
     }

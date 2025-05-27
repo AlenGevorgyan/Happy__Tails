@@ -16,4 +16,26 @@
         <item name="textAllCaps">false</item>
         <item name="android:fontFamily">sans-serif-medium</item>
     </style>
+
+    <style name="HeadlineText">
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:fontFamily">@font/roboto_bold</item>
+        <item name="android:letterSpacing">0.02</item>
+    </style>
+
+    <style name="SubheadlineText">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:fontFamily">@font/roboto_regular</item>
+        <item name="android:letterSpacing">0.01</item>
+    </style>
+
+    <style name="ErrorTextAppearance">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/error_color</item>
+        <item name="android:fontFamily">@font/roboto_regular</item>
+    </style>
 </resources>

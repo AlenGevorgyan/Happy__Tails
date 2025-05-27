@@ -5,58 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".utils.MainActivity">
-
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/main_toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:layout_alignParentTop="true"
-        android:elevation="4dp"
-        app:contentInsetStart="0dp"
-        app:contentInsetEnd="0dp"
-        android:background="@color/dark_secondary_color">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/dark_secondary_color"
-            android:padding="8dp">
-
-            <TextView
-                android:id="@+id/mainAppName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/app_name"
-                android:textSize="20sp"
-                android:textColor="@color/white"
-                android:textStyle="bold"
-                android:layout_marginStart="12dp"
-                android:layout_centerVertical="true"
-                android:maxLines="1"
-                android:ellipsize="end" />
-
-            <ImageButton
-                android:id="@+id/searchIcon"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/circular_bg"
-                android:backgroundTint="@color/dark_secondary_color"
-                android:src="@drawable/search_icon"
-                android:contentDescription="Search"
-                app:tint="@color/white" />
-
-        </RelativeLayout>
-    </androidx.appcompat.widget.Toolbar>
-
     <FrameLayout
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/devider"
-        android:layout_below="@id/main_toolbar"
         android:background="@color/splash_background"/>
 
     <FrameLayout

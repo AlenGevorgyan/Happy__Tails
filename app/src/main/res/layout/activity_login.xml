@@ -6,7 +6,7 @@
     android:id="@+id/container_signup"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/primary_color" tools:context=".utils.LoginActivity">
+    android:background="@color/splash_background" tools:context=".utils.LoginActivity">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_back"
@@ -86,11 +86,14 @@
             android:layout_height="wrap_content"
             android:text="Create Account"
             android:textColor="@color/text_primary" android:textAppearance="?attr/textAppearanceHeadline6" android:textStyle="bold"
-            android:letterSpacing="0.02" android:layout_marginBottom="20dp"/> <com.google.android.material.textfield.TextInputLayout
+            android:letterSpacing="0.02" android:layout_marginBottom="20dp"/>
+            <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/input_layout_username"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp" android:hint="username" app:startIconDrawable="@drawable/user_icon"
+            android:hint="Username" 
+            app:startIconDrawable="@drawable/user_icon"
+            android:layout_marginTop="12dp"
             app:startIconTint="@color/text_secondary" app:errorEnabled="true"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
@@ -106,8 +109,11 @@
                 android:id="@+id/input_layout_email"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp" android:hint="email" app:startIconDrawable="@drawable/ic_email"
-                app:startIconTint="@color/text_secondary" app:errorEnabled="true"
+                android:layout_marginTop="12dp" 
+                android:hint="Email"
+                app:startIconDrawable="@drawable/ic_email"
+                app:startIconTint="@color/text_secondary" 
+                app:errorEnabled="true"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -122,9 +128,13 @@
                 android:id="@+id/input_layout_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp" android:hint="password" app:startIconDrawable="@drawable/ic_password"
-                app:startIconTint="@color/text_secondary" app:passwordToggleEnabled="true"
+                android:layout_marginTop="12dp" 
+                android:hint="Password"
+                app:startIconDrawable="@drawable/ic_password"
+                app:startIconTint="@color/text_secondary" 
+                app:passwordToggleEnabled="true"
                 app:errorEnabled="true"
+                app:errorTextAppearance="@style/ErrorTextAppearance"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -139,9 +149,13 @@
                 android:id="@+id/input_layout_confirm_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp" android:hint="confirm_password" app:startIconDrawable="@drawable/ic_password"
-                app:startIconTint="@color/text_secondary" app:passwordToggleEnabled="true"
+                android:layout_marginTop="12dp" 
+                android:hint="Confirm password"
+                app:startIconDrawable="@drawable/ic_password"
+                app:startIconTint="@color/text_secondary" 
+                app:passwordToggleEnabled="true"
                 app:errorEnabled="true"
+                app:errorTextAppearance="@style/ErrorTextAppearance"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText

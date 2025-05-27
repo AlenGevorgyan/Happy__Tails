@@ -57,7 +57,6 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = "MainActivity";
     private BottomNavigationView bottomNav;
     private ImageButton searchButton;
-    private Toolbar toolbar;
     private TextView mainAppName;
     private ActivityResultLauncher<String> notificationPermissionLauncher;
     private FirebaseAuth firebaseAuth;
@@ -111,9 +110,6 @@ public class MainActivity extends AppCompatActivity
 
         // Check notification permission
         checkNotificationPermission();
-
-        // Update toolbar with username
-        updateToolbarUsername();
     }
 
     @Override
@@ -153,14 +149,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void initializeViews() {
-        toolbar = findViewById(R.id.main_toolbar);
-        mainAppName = findViewById(R.id.mainAppName);
-        setSupportActionBar(toolbar);
         bottomNav = findViewById(R.id.bottomNavigation);
-        searchButton = findViewById(R.id.searchIcon);
-
-        // Handle search button click
-        searchButton.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SearchActivity.class)));
     }
 
     private void setupBottomNavigation() {
@@ -176,7 +165,7 @@ public class MainActivity extends AppCompatActivity
         // Check if the intent is a deep link for Patreon OAuth success
         if ("com.happytails".equals(data.getScheme()) && "oauth-success".equals(data.getHost())) {
             Log.d(TAG, "Received Patreon OAuth deep link: " + data.toString());
-            
+
             String code = data.getQueryParameter("code");
             String state = data.getQueryParameter("state");
 
@@ -306,7 +295,6 @@ public class MainActivity extends AppCompatActivity
         }
 
         fragmentTransaction.commit();
-        toggleToolbarVisibility(!disableToolbar); // Toggle toolbar visibility based on the flag
         // bottomNav visibility is handled in onBackPressed based on fragment type
     }
 
@@ -343,16 +331,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onProfileFragmentClosed() {
-        // This callback is likely from ProfileFragment when it's closed
-        // You might need similar callbacks from other fragments if they manage toolbar/bottom nav visibility
-        toggleToolbarVisibility(true); // Assuming toolbar should be visible when ProfileFragment is closed
         bottomNav.setVisibility(View.VISIBLE); // Assuming bottom nav should be visible
-    }
-
-    private void toggleToolbarVisibility(boolean isVisible) {
-        if (toolbar != null) {
-            toolbar.setVisibility(isVisible ? View.VISIBLE : View.GONE);
-        }
     }
 
     @Override
@@ -362,7 +341,6 @@ public class MainActivity extends AppCompatActivity
         // This callback can be used for any additional cleanup or state management in MainActivity.
         // For example, you might want to ensure bottom nav is visible and toolbar is enabled.
         bottomNav.setVisibility(View.VISIBLE);
-        toggleToolbarVisibility(true);
     }
 
 
@@ -408,7 +386,6 @@ public class MainActivity extends AppCompatActivity
             if (newBackStackCount == 0) {
                 // Back stack is empty, likely returned to a primary bottom nav fragment
                 bottomNav.setVisibility(View.VISIBLE);
-                toggleToolbarVisibility(true); // Assuming primary fragments show toolbar
                 // Ensure the correct bottom nav item is selected based on the visible fragment
                 Fragment visibleFragment = fragmentManager.findFragmentById(FRAGMENT_CONTAINER_ID);
                 if (visibleFragment instanceof HomeFragment) {
@@ -428,55 +405,6 @@ public class MainActivity extends AppCompatActivity
         } else {
             // If no fragments on the back stack, call the super method to close the activity
             super.onBackPressed();
-        }
-    }
-
-    private void updateToolbarUsername() {
-        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
-        if (currentUser != null) {
-            db.collection("users").document(currentUser.getUid())
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        String username = documentSnapshot.getString("username");
-                        if (username != null && !username.isEmpty()) {
-                            mainAppName.setText(username);
-                        }
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error fetching username", e);
-                    mainAppName.setText(R.string.app_name);
-                });
-        }
-    }
-
-    public void onScrollChanged(int scrollY, boolean isScrollingDown) {
-        // Get the current fragment
-        Fragment currentFragment = getSupportFragmentManager().findFragmentById(FRAGMENT_CONTAINER_ID);
-        
-        // Only apply scroll behavior for profile fragments
-        if (currentFragment instanceof ProfileFragment || currentFragment instanceof DogProfile) {
-            if (isScrollingDown) {
-                // Show toolbar when scrolling down
-                toolbar.setVisibility(View.VISIBLE);
-                toolbar.animate()
-                    .translationY(0)
-                    .setDuration(200)
-                    .start();
-            } else {
-                // Hide toolbar when scrolling up and at the top
-                if (scrollY <= 0) {
-                    toolbar.animate()
-                        .translationY(-toolbar.getHeight())
-                        .setDuration(200)
-                        .start();
-                }
-            }
-        } else {
-            // For other fragments, keep toolbar visible
-            toolbar.setVisibility(View.VISIBLE);
-            toolbar.setTranslationY(0);
         }
     }
 

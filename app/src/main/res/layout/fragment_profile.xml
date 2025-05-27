@@ -103,9 +103,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Username"
-                        android:textSize="24sp" 
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary" />
+                        style="@style/HeadlineText"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackground" />
 
                     <TextView
                         android:id="@+id/statusTV"
@@ -114,9 +115,7 @@
                         android:maxLines="2" 
                         android:ellipsize="end" 
                         android:text="Love to eat shawarma"
-                        android:textStyle="normal" 
-                        android:textColor="@color/text_secondary" 
-                        android:textSize="14sp" />
+                        style="@style/SubheadlineText" />
 
                 </LinearLayout>
 
