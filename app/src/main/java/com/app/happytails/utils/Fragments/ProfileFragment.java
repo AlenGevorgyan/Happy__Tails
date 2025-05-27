@@ -18,6 +18,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.core.widget.NestedScrollView;
+import androidx.appcompat.widget.Toolbar;
 
 import com.app.happytails.R;
 import com.app.happytails.utils.Adapters.PostAdapter;
@@ -25,9 +27,12 @@ import com.app.happytails.utils.AndroidUtil;
 import com.app.happytails.utils.ChatActivity;
 import com.app.happytails.utils.FollowersActivity;
 import com.app.happytails.utils.FollowingsActivity;
+import com.app.happytails.utils.MainActivity;
 import com.app.happytails.utils.model.HomeModel;
 import com.app.happytails.utils.model.UserModel;
 import com.bumptech.glide.Glide;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -55,6 +60,9 @@ public class ProfileFragment extends Fragment {
     private PostAdapter postAdapter;
     private String profileUid;
     private String currentUserId;
+    private Toolbar profileToolbar;
+    private TextView toolbarTitle;
+    private NestedScrollView profileScrollView;
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private Context context;
@@ -143,6 +151,9 @@ public class ProfileFragment extends Fragment {
         chatBtn = view.findViewById(R.id.chatBtn);
         followerTv = view.findViewById(R.id.folower_Tv);
         followingTv = view.findViewById(R.id.following_Tv);
+        profileToolbar = view.findViewById(R.id.profile_toolbar);
+        toolbarTitle = view.findViewById(R.id.toolbar_title);
+        profileScrollView = view.findViewById(R.id.profile_scroll_view);
 
         FirebaseAuth auth = FirebaseAuth.getInstance();
         currentUser = auth.getCurrentUser();
@@ -164,6 +175,30 @@ public class ProfileFragment extends Fragment {
         settingsBtn.setOnClickListener(v -> openSettingsFragment());
         chatBtn.setOnClickListener(v -> navigateToTheChat());
         followBtn.setOnClickListener(v -> handleFollowButtonClick());
+
+        setupScrollListener();
+    }
+
+    private void setupScrollListener() {
+        if (profileScrollView != null) {
+            profileScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+                if (username != null) {
+                    int[] location = new int[2];
+                    username.getLocationInWindow(location);
+                    boolean isNameVisible = location[1] >= 0;
+
+                    // Change toolbar background color based on scroll position
+                    if (!isNameVisible) {
+                        // When username is not visible, make toolbar more opaque
+                        profileToolbar.setBackgroundColor(getResources().getColor(R.color.dark_secondary_color));
+                    } else {
+                        // When username is visible, make toolbar more transparent
+                        profileToolbar.setBackgroundColor(getResources().getColor(R.color.dark_secondary_color));
+                        profileToolbar.getBackground().setAlpha(200); // Semi-transparent
+                    }
+                }
+            });
+        }
     }
 
     private void navigateToTheChat() {
@@ -225,7 +260,7 @@ public class ProfileFragment extends Fragment {
                 String profileURL = value.getString("userImage");
                 String status = value.getString("status");
 
-                username.setText(name != null ? name : "Unknown");
+                username.setText(name != null ? name : "Unknown");;
                 statusTv.setText(status != null ? status : "No status");
                 followerCountTv.setText(String.valueOf(followerCount));
                 followingCountTv.setText(String.valueOf(followingsCount));
@@ -253,8 +288,9 @@ public class ProfileFragment extends Fragment {
     }
 
     private void setupRecyclerView() {
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        postAdapter = new PostAdapter(getContext(), new ArrayList<>());
+        recyclerView.setAdapter(postAdapter);
     }
 
     private void loadUserPosts() {

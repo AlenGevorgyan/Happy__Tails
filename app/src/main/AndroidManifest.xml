@@ -57,23 +57,8 @@
             android:exported="true">
             <intent-filter>
 
-                <!-- Launcher -->
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-            <intent-filter>
-
-                <!-- Deep link for Patreon OAuth callback -->
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="rational-photon-380817.web.app"
-                    android:pathPrefix="/redirect_patreon"
-                    android:scheme="https" />
             </intent-filter>
         </activity> <!-- LoginActivity: handles Firebase Dynamic Links -->
         <activity

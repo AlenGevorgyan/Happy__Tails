@@ -72,17 +72,22 @@ public class SplashActivity extends AppCompatActivity {
             String code = data.getQueryParameter("code");
             if (code != null) {
                 Log.d(TAG, "Received OAuth code: " + code);
-                navigateToMainActivityWithOAuth(code);
+                // Add delay before OAuth navigation
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    navigateToMainActivityWithOAuth(code);
+                }, SPLASH_DELAY_MS);
                 return;
             }
         }
 
-        // Normal app startup flow
-        if (FirebaseUtil.isLoggedIn()) {
-            navigateToMainActivity();
-        } else {
-            navigateToSignInActivity();
-        }
+        // Normal app startup flow with delay
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (FirebaseUtil.isLoggedIn()) {
+                navigateToMainActivity();
+            } else {
+                navigateToSignInActivity();
+            }
+        }, SPLASH_DELAY_MS);
     }
 
     /**

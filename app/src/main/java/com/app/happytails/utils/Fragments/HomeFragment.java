@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.app.happytails.R;
 import com.app.happytails.utils.Adapters.HomeAdapter;
+import com.app.happytails.utils.MainActivity;
 import com.app.happytails.utils.model.HomeModel;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.EventListener;
@@ -47,6 +48,35 @@ public class HomeFragment extends Fragment {
         postList = new ArrayList<>();
         homeAdapter = new HomeAdapter(getContext(), postList);
         recyclerView.setAdapter(homeAdapter);
+
+        // Add scroll listener
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            private int lastScrollY = 0;
+            private boolean isScrollingDown = false;
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                
+                // Calculate if scrolling down
+                isScrollingDown = dy > 0;
+                
+                // Get current scroll position
+                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                if (layoutManager != null) {
+                    int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+                    View firstVisibleItem = layoutManager.findViewByPosition(firstVisibleItemPosition);
+                    int scrollY = firstVisibleItem != null ? firstVisibleItem.getTop() : 0;
+                    
+                    // Notify MainActivity about scroll changes
+                    if (getActivity() instanceof MainActivity) {
+                        ((MainActivity) getActivity()).onScrollChanged(scrollY, isScrollingDown);
+                    }
+                }
+                
+                lastScrollY = dy;
+            }
+        });
 
         db = FirebaseFirestore.getInstance();
         dogsCollection = db.collection("dogs");

@@ -10,7 +10,7 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/dark_secondary_color"
+        android:background="@color/primary_dark"
         app:elevation="4dp">
 
         <com.google.android.material.appbar.MaterialToolbar

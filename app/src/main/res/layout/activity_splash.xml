@@ -47,7 +47,7 @@
         android:fontFamily="@font/montserrat_bold"
         app:fontFamily="@font/font_family"
         android:text="Virtual Dog Adoption"
-        android:textColor="@color/text_secondary"
+        android:textColor="@color/text_primary"
         android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@+id/progress_circular"
         app:layout_constraintEnd_toEndOf="parent"

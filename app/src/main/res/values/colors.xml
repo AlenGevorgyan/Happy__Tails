@@ -3,25 +3,33 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
+    <!-- Updated Splash Background -->
+    <color name="splash_background">#FEF9E7</color> <!-- Cream White -->
 
+    <!-- Accent Color from Logo -->
+    <color name="accent_color">#D9CCAD76</color> <!-- Sunset Yellow -->
 
-    <color name="splash_background">#FBF8E4</color>
-    <color name="accent_color">#FF6F61</color>
-    <color name="text_primary">#333333</color>
-    <color name="text_secondary">#666666</color>
-    <color name="primary_color">#D4FFFBE6</color>
-    <color name="dark_secondary_color">#129990</color>
-    <color name="secondary_color">#096B68</color>
-    <color name="light_secondary_color">#90D1CA</color>
-    <color name="off_white">#FDFDFD</color>
-    <color name="light_gray">#989898</color>
+    <!-- Text Colors -->
+    <color name="text_primary">#0F3D4C</color> <!-- Deep Navy -->
+    <color name="text_secondary">#2BA3A7</color> <!-- Ocean Teal -->
 
+    <!-- Primary Colors (Teal Blue theme) -->
+    <color name="secondary_color">#3EC6CF</color> <!-- Teal Blue -->
+    <color name="light_secondary_color">#A8E7EC</color> <!-- Light Teal -->
+    <color name="dark_secondary_color">#27AEB3</color> <!-- Ocean Teal -->
+
+    <!-- Secondary Colors (Soft Orange theme) -->
+    <color name="primary_color">#F89D45</color> <!-- Soft Orange -->
+    <color name="primary_light">#FFD4A1</color> <!-- Peach -->
+    <color name="primary_dark">#DB7A2B</color> <!-- Burnt Orange -->
+
+    <!-- Backgrounds & Neutrals -->
+    <color name="off_white">#FEF9E7</color> <!-- Matches splash -->
+    <color name="light_gray">#D7CCC8</color> <!-- Soft neutral -->
     <color name="dark_gray">#505050</color>
-
     <color name="gray">#959595</color>
 
+    <!-- Utility -->
     <color name="transparent">#00FFFFFF</color>
     <color name="success_green">#69F436</color>
-
-
 </resources>

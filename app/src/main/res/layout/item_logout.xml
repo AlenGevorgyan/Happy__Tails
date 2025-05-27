@@ -7,7 +7,7 @@
     android:layout_marginHorizontal="10dp"
     app:cardElevation="17dp"
     app:strokeWidth="0dp"
-    android:backgroundTint="@color/secondary_color"
+    android:backgroundTint="@color/dark_secondary_color"
     app:cardCornerRadius="18dp">
 
     <RelativeLayout
@@ -23,7 +23,7 @@
             android:layout_height="wrap_content"
             android:text="Logout"
             android:textStyle="bold"
-            android:textColor="@color/primary_color"
+            android:textColor="@color/white"
             android:layout_centerVertical="true"
             android:textSize="22sp" />
 

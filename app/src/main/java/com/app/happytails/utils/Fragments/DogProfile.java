@@ -10,17 +10,21 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.app.happytails.R;
+import com.app.happytails.utils.MainActivity;
 import com.app.happytails.utils.PatreonOAuthHelper;
 import com.bumptech.glide.Glide;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -49,6 +53,9 @@ public class DogProfile extends Fragment {
     private ProgressBar fundingProgress;
     private CircleImageView dogImage;
     private Button donateButton;
+    private Toolbar dogToolbar;
+    private TextView toolbarTitle;
+    private NestedScrollView dogScrollView;
 
     private BottomNavigationView navigationView;
 
@@ -66,13 +73,12 @@ public class DogProfile extends Fragment {
     private boolean hasVetInfo = false; // Flag to check if vet info exists
 
     // Constant for the FrameLayout container ID
-    private static final int DOG_FRAGMENT_CONTAINER_ID = R.id.dog_fragment_container; // <-- Verify this ID
+    private static final int DOG_FRAGMENT_CONTAINER_ID = R.id.dog_fragment_container;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Inflate the layout with FrameLayout and BottomNavigationView
-        View view = inflater.inflate(R.layout.fragment_dog_profile, container, false); // Use the correct layout
+        View view = inflater.inflate(R.layout.fragment_dog_profile, container, false);
 
         // Initialize views
         dogNameTv = view.findViewById(R.id.dogNameTV);
@@ -83,16 +89,20 @@ public class DogProfile extends Fragment {
         targetAmountTv = view.findViewById(R.id.targetAmountTV);
         dogImage = view.findViewById(R.id.dogProfileImage);
         donateButton = view.findViewById(R.id.donateButton);
+        dogToolbar = view.findViewById(R.id.dog_toolbar);
+        toolbarTitle = view.findViewById(R.id.toolbar_title);
+        dogScrollView = view.findViewById(R.id.dog_profile_scroll_view);
 
         // Initialize BottomNavigationView
         navigationView = view.findViewById(R.id.dogBottomNavigation);
 
+        // Setup toolbar and scroll behavior
+        setupToolbar(view);
+        setupScrollListener();
+
         db = FirebaseFirestore.getInstance();
         firebaseAuth = FirebaseAuth.getInstance();
         httpClient = new OkHttpClient();
-
-        // Setup toolbar back navigation
-        setupToolbar(view);
 
         // Get dogId from arguments
         if (getArguments() != null) {
@@ -104,38 +114,48 @@ public class DogProfile extends Fragment {
         if (dogId != null) {
             loadDogData();
         } else {
-            // Handle case where dogId is missing (shouldn't happen if navigated correctly)
             Log.e(TAG, "Dog ID is missing in arguments!");
             Toast.makeText(getContext(), "Error: Dog ID not provided.", Toast.LENGTH_SHORT).show();
-            handleBackPress(); // Go back if essential data is missing
+            handleBackPress();
             return view;
         }
 
-        // Setup bottom navigation
         setupBottomNavigation();
-
         donateButton.setOnClickListener(v -> initiateDonation());
 
         return view;
     }
 
-    // Setup toolbar back navigation
     private void setupToolbar(View view) {
-        MaterialToolbar toolbar = view.findViewById(R.id.dog_toolbar);
-        if (toolbar != null) {
-            toolbar.setNavigationOnClickListener(v -> {
-                // Handle back button click - typically pop the fragment from the back stack
+        if (dogToolbar != null) {
+            ImageButton backButton = view.findViewById(R.id.back_btn_dog);
+            backButton.setOnClickListener(v -> {
                 getParentFragmentManager().popBackStack();
             });
-            // Optional: Set toolbar title dynamically if needed
-            // if (dogNameTv != null && dogNameTv.getText() != null) {
-            //     toolbar.setTitle(dogNameTv.getText().toString());
-            // } else {
-            //     toolbar.setTitle("Dog Profile");
-            // }
         }
     }
 
+    private void setupScrollListener() {
+        if (dogScrollView != null) {
+            dogScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+                if (dogNameTv != null) {
+                    int[] location = new int[2];
+                    dogNameTv.getLocationInWindow(location);
+                    boolean isNameVisible = location[1] >= 0;
+
+                    // Change toolbar background color based on scroll position
+                    if (!isNameVisible) {
+                        // When dog name is not visible, make toolbar more opaque
+                        dogToolbar.setBackgroundColor(getResources().getColor(R.color.dark_secondary_color));
+                    } else {
+                        // When dog name is visible, make toolbar more transparent
+                        dogToolbar.setBackgroundColor(getResources().getColor(R.color.dark_secondary_color));
+                        dogToolbar.getBackground().setAlpha(200); // Semi-transparent
+                    }
+                }
+            });
+        }
+    }
 
     private void loadDogData() {
         DocumentReference ref = db.collection("dogs").document(dogId);

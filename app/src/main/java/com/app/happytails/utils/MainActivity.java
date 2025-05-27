@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -57,7 +58,10 @@ public class MainActivity extends AppCompatActivity
     private BottomNavigationView bottomNav;
     private ImageButton searchButton;
     private Toolbar toolbar;
+    private TextView mainAppName;
     private ActivityResultLauncher<String> notificationPermissionLauncher;
+    private FirebaseAuth firebaseAuth;
+    private FirebaseFirestore db;
 
     // Variable to hold the collected dog data across fragments
     private HomeModel currentDogData;
@@ -70,12 +74,16 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Initialize Firebase instances
+        firebaseAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+
         // Register the permission launcher
         notificationPermissionLauncher = NotificationHelper.createPermissionLauncher(this);
 
         // Hide the default action bar
         if (getSupportActionBar() != null) {
-            getSupportActionBar( ).hide();
+            getSupportActionBar().hide();
         }
 
         // Set navigation bar color for Lollipop and above
@@ -88,9 +96,8 @@ public class MainActivity extends AppCompatActivity
         initializeViews();
 
         // Load the initial fragment (HomeFragment) if the activity is created for the first time
-        // You might need to adjust this logic based on your app's entry point
         if (savedInstanceState == null) {
-            loadFragment(new HomeFragment(), false); // HomeFragment might not disable toolbar
+            loadFragment(new HomeFragment(), false);
         }
 
         // Set up bottom navigation
@@ -104,6 +111,9 @@ public class MainActivity extends AppCompatActivity
 
         // Check notification permission
         checkNotificationPermission();
+
+        // Update toolbar with username
+        updateToolbarUsername();
     }
 
     @Override
@@ -144,6 +154,7 @@ public class MainActivity extends AppCompatActivity
 
     private void initializeViews() {
         toolbar = findViewById(R.id.main_toolbar);
+        mainAppName = findViewById(R.id.mainAppName);
         setSupportActionBar(toolbar);
         bottomNav = findViewById(R.id.bottomNavigation);
         searchButton = findViewById(R.id.searchIcon);
@@ -417,6 +428,55 @@ public class MainActivity extends AppCompatActivity
         } else {
             // If no fragments on the back stack, call the super method to close the activity
             super.onBackPressed();
+        }
+    }
+
+    private void updateToolbarUsername() {
+        FirebaseUser currentUser = firebaseAuth.getCurrentUser();
+        if (currentUser != null) {
+            db.collection("users").document(currentUser.getUid())
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String username = documentSnapshot.getString("username");
+                        if (username != null && !username.isEmpty()) {
+                            mainAppName.setText(username);
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error fetching username", e);
+                    mainAppName.setText(R.string.app_name);
+                });
+        }
+    }
+
+    public void onScrollChanged(int scrollY, boolean isScrollingDown) {
+        // Get the current fragment
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(FRAGMENT_CONTAINER_ID);
+        
+        // Only apply scroll behavior for profile fragments
+        if (currentFragment instanceof ProfileFragment || currentFragment instanceof DogProfile) {
+            if (isScrollingDown) {
+                // Show toolbar when scrolling down
+                toolbar.setVisibility(View.VISIBLE);
+                toolbar.animate()
+                    .translationY(0)
+                    .setDuration(200)
+                    .start();
+            } else {
+                // Hide toolbar when scrolling up and at the top
+                if (scrollY <= 0) {
+                    toolbar.animate()
+                        .translationY(-toolbar.getHeight())
+                        .setDuration(200)
+                        .start();
+                }
+            }
+        } else {
+            // For other fragments, keep toolbar visible
+            toolbar.setVisibility(View.VISIBLE);
+            toolbar.setTranslationY(0);
         }
     }
 

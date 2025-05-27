@@ -6,7 +6,7 @@
         <item name="colorSecondary">@color/secondary_color</item>
         <item name="colorSecondaryVariant">@color/secondary_color</item>
         <item name="colorOnSecondary">@color/black</item>
-        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:statusBarColor">@color/dark_secondary_color</item>
         <item name="android:windowBackground">@color/off_white</item>
     </style>
     <style name="AppTheme" parent="Theme.Material3.DayNight.NoActionBar">

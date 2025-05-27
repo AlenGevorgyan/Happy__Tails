@@ -5,58 +5,66 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/off_white" android:fitsSystemWindows="true"
+    android:background="@color/off_white" 
+    android:fitsSystemWindows="true"
     tools:context=".utils.Fragments.ProfileFragment">
 
     <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/profile_appbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/dark_secondary_color" app:elevation="4dp">
+        android:background="@color/dark_secondary_color"
+        app:elevation="4dp">
 
-        <com.google.android.material.appbar.MaterialToolbar
+        <androidx.appcompat.widget.Toolbar
             android:id="@+id/profile_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize">
+            android:layout_height="wrap_content">
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
                 <TextView
+                    android:id="@+id/toolbar_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Profile"
-                    android:textSize="30dp"
+                    android:textSize="20sp"
                     android:textStyle="bold"
                     android:layout_toRightOf="@id/back_btn_profile"
                     android:layout_centerVertical="true"
-                    android:textColor="@color/white"
-                    android:fontFamily="@font/font_family"/>
+                    android:textColor="@color/white"/>
 
                 <ImageButton
                     android:id="@+id/settings_profile"
                     android:layout_alignParentRight="true"
                     android:layout_marginRight="10dp"
-                    android:layout_width="?attr/actionBarSize" android:layout_height="?attr/actionBarSize" android:background="?attr/selectableItemBackgroundBorderless"
-                    android:padding="14dp" android:src="@drawable/settings_icon"
+                    android:layout_width="?attr/actionBarSize" 
+                    android:layout_height="?attr/actionBarSize" 
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:padding="14dp" 
+                    android:src="@drawable/settings_icon"
                     app:tint="@color/white" />
+
                 <ImageButton
                     android:id="@+id/back_btn_profile"
                     android:layout_alignParentLeft="true"
-                    android:layout_width="?attr/actionBarSize" android:layout_height="?attr/actionBarSize"
+                    android:layout_width="?attr/actionBarSize" 
+                    android:layout_height="?attr/actionBarSize"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:padding="14dp" android:src="@drawable/baseline_arrow_back_24"
+                    android:padding="14dp" 
+                    android:src="@drawable/baseline_arrow_back_24"
                     app:tint="@color/white" />
 
             </RelativeLayout>
 
-
-
-        </com.google.android.material.appbar.MaterialToolbar>
+        </androidx.appcompat.widget.Toolbar>
 
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/profile_scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
@@ -65,39 +73,62 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp"> <LinearLayout
-            android:id="@+id/UserInfo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingVertical="8dp"> <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/profileImage"
-            android:layout_width="100dp" android:layout_height="100dp" app:civ_border_color="@color/accent_color" app:civ_border_width="2dp" android:src="@drawable/user_icon"
-            android:layout_marginEnd="16dp" /> <LinearLayout
-            android:id="@+id/name_about_Tv"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical" android:orientation="vertical">
+            android:padding="16dp">
 
-            <TextView
-                android:id="@+id/nameTV"
+            <LinearLayout
+                android:id="@+id/UserInfo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Username"
-                android:textSize="24sp" android:textStyle="bold"
-                android:textColor="@color/text_primary" /> <TextView
-            android:id="@+id/statusTV"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:maxLines="2" android:ellipsize="end" android:text="Love to eat shawarma"
-            android:textStyle="normal" android:textColor="@color/text_secondary" android:textSize="14sp" /> </LinearLayout>
+                android:orientation="horizontal"
+                android:paddingVertical="8dp">
 
-        </LinearLayout>
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/profileImage"
+                    android:layout_width="100dp" 
+                    android:layout_height="100dp" 
+                    app:civ_border_color="@color/accent_color" 
+                    app:civ_border_width="2dp" 
+                    android:src="@drawable/user_icon"
+                    android:layout_marginEnd="16dp" />
+
+                <LinearLayout
+                    android:id="@+id/name_about_Tv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical" 
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/nameTV"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Username"
+                        android:textSize="24sp" 
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary" />
+
+                    <TextView
+                        android:id="@+id/statusTV"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:maxLines="2" 
+                        android:ellipsize="end" 
+                        android:text="Love to eat shawarma"
+                        android:textStyle="normal" 
+                        android:textColor="@color/text_secondary" 
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
 
             <com.google.android.material.divider.MaterialDivider
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:layout_marginVertical="16dp" app:dividerColor="@color/light_gray" /> <LinearLayout
+                android:layout_marginVertical="16dp" 
+                app:dividerColor="@color/light_gray" />
+
+            <LinearLayout
                 android:id="@+id/UserFolowersPosts"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -115,14 +146,19 @@
                         android:id="@+id/folower_Tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Followers" android:textColor="@color/text_secondary" android:textSize="14sp" android:textStyle="bold" />
+                        android:text="Followers" 
+                        android:textColor="@color/text_secondary" 
+                        android:textSize="14sp" 
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/folower_countTv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/text_primary" android:text="100"
-                        android:textSize="20sp" android:textStyle="bold" />
+                        android:textColor="@color/text_primary" 
+                        android:text="100"
+                        android:textSize="20sp" 
+                        android:textStyle="bold" />
 
                 </LinearLayout>
 
@@ -137,14 +173,19 @@
                         android:id="@+id/following_Tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Followings" android:textColor="@color/text_secondary" android:textSize="14sp" android:textStyle="bold" />
+                        android:text="Followings" 
+                        android:textColor="@color/text_secondary" 
+                        android:textSize="14sp" 
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/following_countTv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/text_primary" android:text="100"
-                        android:textSize="20sp" android:textStyle="bold" />
+                        android:textColor="@color/text_primary" 
+                        android:text="100"
+                        android:textSize="20sp" 
+                        android:textStyle="bold" />
 
                 </LinearLayout>
 
@@ -158,14 +199,19 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Posts" android:textColor="@color/text_secondary" android:textSize="14sp" android:textStyle="bold" />
+                        android:text="Posts" 
+                        android:textColor="@color/text_secondary" 
+                        android:textSize="14sp" 
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/post_counttv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/text_primary" android:text="100"
-                        android:textSize="20sp" android:textStyle="bold" />
+                        android:textColor="@color/text_primary" 
+                        android:text="100"
+                        android:textSize="20sp" 
+                        android:textStyle="bold" />
 
                 </LinearLayout>
 
@@ -175,29 +221,46 @@
                 android:id="@+id/subscribeBtn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp" android:layout_marginHorizontal="16dp" android:text="Follow" android:textColor="@color/white"
+                android:layout_marginTop="24dp" 
+                android:layout_marginHorizontal="16dp" 
+                android:text="Follow" 
+                android:textColor="@color/white"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:paddingVertical="12dp"
                 app:cornerRadius="8dp"
-                app:backgroundTint="@color/accent_color" style="@style/Widget.MaterialComponents.Button" />
+                app:backgroundTint="@color/accent_color" 
+                style="@style/Widget.MaterialComponents.Button" />
 
             <ImageButton
                 android:id="@+id/chatBtn"
-                android:layout_width="48dp" android:layout_height="48dp" android:layout_gravity="center_horizontal"
-                android:layout_marginTop="16dp" android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_width="48dp" 
+                android:layout_height="48dp" 
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp" 
+                android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/baseline_chat_bubble_24"
-                app:tint="@color/dark_secondary_color" /> <com.google.android.material.divider.MaterialDivider
+                app:tint="@color/dark_secondary_color" />
+
+            <com.google.android.material.divider.MaterialDivider
                 android:id="@+id/profileDevider"
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:layout_marginTop="24dp" android:layout_marginBottom="8dp"
-                app:dividerColor="@color/light_gray" /> <androidx.recyclerview.widget.RecyclerView
+                android:layout_marginTop="24dp" 
+                android:layout_marginBottom="8dp"
+                app:dividerColor="@color/light_gray" />
+
+            <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerViewProfile"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:orientation="vertical"
+                android:layout_height="wrap_content" 
+                android:orientation="vertical"
                 android:clipToPadding="false"
-                android:paddingBottom="16dp" tools:listitem="@layout/profile_post" /> </LinearLayout>
+                android:paddingBottom="16dp" 
+                tools:listitem="@layout/profile_post" />
+
+        </LinearLayout>
+
     </androidx.core.widget.NestedScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
